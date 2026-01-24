@@ -1,8 +1,7 @@
 "use client";
 import type React from "react";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { SidebarProvider } from "@/components/layout/sidebar-provider";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -14,27 +13,11 @@ export default function DashboardLayout({
 }) {
   // Track the collapsed state of sidebar
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const router = useRouter();
 
 
 
-  useEffect(() => {
-    const handleSidebarChange = (e: CustomEvent) => {
-      setIsSidebarCollapsed(e.detail.isCollapsed);
-    };
 
-    window.addEventListener(
-      "sidebarStateChange" as any,
-      handleSidebarChange as EventListener
-    );
-
-    return () => {
-      window.removeEventListener(
-        "sidebarStateChange" as any,
-        handleSidebarChange as EventListener
-      );
-    };
-  }, []);
+ 
 
 
   console.log("Dashboard Layout - Rendering dashboard");
