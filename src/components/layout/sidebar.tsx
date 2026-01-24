@@ -164,9 +164,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
               <LogOut className="w-5 h-5" />
               {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
             </Link>
-            {!isCollapsed && (
-              <p className="text-xs text-sidebar-foreground/50 px-4 py-2">v1.0.0</p>
-            )}
           </div>
         </div>
       </div>

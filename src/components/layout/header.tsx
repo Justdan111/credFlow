@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { ModeToggle } from './mood-togggle';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -44,6 +45,7 @@ export function Header({ sidebarOpen, onSidebarToggle }: HeaderProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-4">
+        <ModeToggle />
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
