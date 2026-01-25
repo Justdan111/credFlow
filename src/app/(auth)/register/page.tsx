@@ -8,13 +8,16 @@ import { Eye, EyeOff, Mail, Lock, User, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+    const router = useRouter();
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
+    router.push('/onboarding');
     e.preventDefault()
     setIsLoading(true)
     setTimeout(() => setIsLoading(false), 1000)
@@ -209,7 +212,7 @@ export default function RegisterPage() {
             {/* Login Link */}
             <p className="text-center text-foreground/70 text-sm">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+              <Link href="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
                 Sign in
               </Link>
             </p>

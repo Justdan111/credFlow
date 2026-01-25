@@ -8,12 +8,15 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+    const router = useRouter();
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
+    router.push('/dashboard');
     e.preventDefault()
     setIsLoading(true)
     setTimeout(() => setIsLoading(false), 1000)
@@ -178,7 +181,7 @@ export default function LoginPage() {
             {/* Sign Up Link */}
             <p className="text-center text-foreground/70 text-sm">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+              <Link href="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
                 Create one
               </Link>
             </p>

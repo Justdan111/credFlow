@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowRight, Users, TrendingUp, BarChart3, DollarSign } from 'lucide-react';
 import type { Variants } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 const HeroSection = () => {
+    const router = useRouter();
   const floatingCards = [
     { icon: Users, label: '250 Customers', color: 'primary', delay: 0.2 },
     { icon: TrendingUp, label: '+45% Collections', color: 'success', delay: 0.3 },
@@ -86,11 +88,11 @@ const HeroSection = () => {
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <Button variant="default" size="lg">
+              <Button variant="default" size="lg" onClick={() => router.push('/register')}>
                 Get Started
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => router.push('/login')}>
                 Login to Dashboard
               </Button>
             </motion.div>

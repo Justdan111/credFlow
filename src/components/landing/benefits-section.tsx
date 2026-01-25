@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import type { Variants } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 const BenefitsSection = () => {
+    const router = useRouter();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -82,7 +84,7 @@ const BenefitsSection = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Button variant="default" size="lg">
+              <Button variant="default" size="lg" onClick={() => router.push('/register')}>
                 Start Your Free Trial
                 <ArrowRight className="w-4 h-4" />
               </Button>
