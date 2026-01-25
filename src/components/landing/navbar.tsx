@@ -2,9 +2,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { DollarSign, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/dist/client/components/navigation';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const navLinks = [
     { href: '#features', label: 'Features' },
@@ -55,14 +57,14 @@ const Navbar = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <Button variant="ghost" size="sm">Login</Button>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/auth/login')}>Login</Button>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <Button variant="default" size="sm">Get Started</Button>
+            <Button variant="default" size="sm" onClick={() => router.push('/auth/register')}>Get Started</Button>
           </motion.div>
         </div>
 
@@ -95,8 +97,8 @@ const Navbar = () => {
               </a>
             ))}
             <div className="flex gap-3 pt-3">
-              <Button variant="outline" className="flex-1">Login</Button>
-              <Button variant="default" className="flex-1">Get Started</Button>
+              <Button variant="outline" className="flex-1" onClick={() => router.push('/auth/login')}>Login</Button>
+              <Button variant="default" className="flex-1" onClick={() => router.push('/auth/register')}>Get Started</Button>
             </div>
           </div>
         </motion.div>

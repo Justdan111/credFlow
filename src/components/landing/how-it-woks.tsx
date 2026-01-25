@@ -102,7 +102,7 @@ const HowItWorksSection = () => {
                       initial={{ scaleX: 0 }}
                       animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
                       transition={{ duration: 0.6, delay: 0.5 + index * 0.2 }}
-                      className="h-full bg-gradient-to-r from-primary/40 to-primary/10 origin-left"
+                      className="h-full bg-linear-to-r from-primary/40 to-primary/10 origin-left"
                     />
                   </div>
                 )}
