@@ -156,7 +156,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
             <Link
               href="/"
               className={cn(
-                "flex items-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors",
+                "flex items-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors text-red-500",
                 isCollapsed ? "px-2 py-2 justify-center" : "px-4 py-3 gap-3"
               )}
               title={isCollapsed ? "Logout" : ""}
