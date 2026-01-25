@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
               asChild
               className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 h-11 font-semibold"
             >
-              <Link href="/auth/login">Go to Login</Link>
+              <Link href="/login">Go to Login</Link>
             </Button>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
           {/* Back to Login */}
           <div className="text-center">
             <Link
-              href="/auth/login"
+              href="/login"
               className="text-sm text-foreground/70 hover:text-foreground transition-colors"
             >
               Remember your password?{' '}

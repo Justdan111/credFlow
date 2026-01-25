@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
                 asChild
                 className="w-full bg-linear-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 h-11 font-semibold"
               >
-                <Link href="/auth/login">Back to Login</Link>
+                <Link href="/login">Back to Login</Link>
               </Button>
             </div>
           </div>
