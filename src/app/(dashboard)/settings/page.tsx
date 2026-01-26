@@ -7,12 +7,7 @@ import { Save } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
-  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: '👤' },
@@ -24,13 +19,13 @@ export default function SettingsPage() {
   return (
       <div className="space-y-8">
         {/* Header */}
-        <div className={`${mounted ? 'animate-fadeInDown' : 'opacity-0'}`}>
+        <div className="animate-fadeInDown">
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-foreground/70 mt-2">Manage your account preferences and settings.</p>
         </div>
 
         {/* Tabs */}
-        <div className={`flex gap-2 border-b border-border overflow-x-auto ${mounted ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
+        <div className="flex gap-2 border-b border-border overflow-x-auto animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -49,7 +44,7 @@ export default function SettingsPage() {
 
         {/* Profile Settings */}
         {activeTab === 'profile' && (
-          <Card className={`p-6 border border-border/50 space-y-6 ${mounted ? 'animate-scaleIn' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+          <Card className="p-6 border border-border/50 space-y-6 animate-scaleIn" style={{ animationDelay: '0.2s' }}>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Profile Information</h3>
               <div className="space-y-4">
@@ -92,7 +87,7 @@ export default function SettingsPage() {
 
         {/* Notifications Settings */}
         {activeTab === 'notifications' && (
-          <Card className={`p-6 border border-border/50 space-y-6 ${mounted ? 'animate-scaleIn' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+          <Card className="p-6 border border-border/50 space-y-6 animate-scaleIn" style={{ animationDelay: '0.2s' }}>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Email Notifications</h3>
               <div className="space-y-4">
@@ -128,7 +123,7 @@ export default function SettingsPage() {
 
         {/* Security Settings */}
         {activeTab === 'security' && (
-          <Card className={`p-6 border border-border/50 space-y-6 ${mounted ? 'animate-scaleIn' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+          <Card className="p-6 border border-border/50 space-y-6 animate-scaleIn" style={{ animationDelay: '0.2s' }}>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Password</h3>
               <div className="space-y-4">
@@ -172,7 +167,7 @@ export default function SettingsPage() {
 
         {/* Appearance Settings */}
         {activeTab === 'appearance' && (
-          <Card className={`p-6 border border-border/50 space-y-6 ${mounted ? 'animate-scaleIn' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+          <Card className="p-6 border border-border/50 space-y-6 animate-scaleIn" style={{ animationDelay: '0.2s' }}>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Theme</h3>
               <div className="space-y-3">
