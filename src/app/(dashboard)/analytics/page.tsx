@@ -4,8 +4,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, TrendingUp, TrendingDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const collectionData = [
   { month: 'Jan', target: 1000000, actual: 850000 },
@@ -33,11 +32,6 @@ const customerValueData = [
 ];
 
 export default function AnalyticsPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const insights = [
     { title: 'Collection Rate', value: '92.5%', change: '+3.2%', trend: 'up' },
@@ -49,7 +43,7 @@ export default function AnalyticsPage() {
   return (
       <div className="space-y-8">
         {/* Header */}
-        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${mounted ? 'animate-fadeInDown' : 'opacity-0'}`}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fadeInDown">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
             <p className="text-foreground/70 mt-2">Deep insights into your debt and collection performance.</p>
@@ -65,7 +59,7 @@ export default function AnalyticsPage() {
           {insights.map((insight, index) => (
             <Card
               key={index}
-              className={`p-6 border border-border/50 hover:border-purple-300 transition-all ${mounted ? 'animate-scaleIn' : 'opacity-0'}`}
+              className="p-6 border border-border/50 hover:border-purple-300 transition-all animate-scaleIn"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <p className="text-sm text-foreground/70 mb-2">{insight.title}</p>
@@ -83,7 +77,7 @@ export default function AnalyticsPage() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Collection Performance */}
-          <Card className={`p-6 border border-border/50 ${mounted ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: '0.4s' }}>
+          <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-foreground">Collection Performance</h3>
               <p className="text-sm text-foreground/70 mt-1">Target vs Actual Collections</p>
@@ -100,7 +94,11 @@ export default function AnalyticsPage() {
                     borderRadius: '8px',
                     color: '#f1f5f9',
                   }}
-                  formatter={(value) => `₦${(value / 1000000).toFixed(1)}M`}
+                  formatter={(value) => {
+                    const num = typeof value === 'number' ? value : Number(value);
+                    if (isNaN(num)) return '₦0M';
+                    return `₦${(num / 1000000).toFixed(1)}M`;
+                  }}
                 />
                 <Legend />
                 <Bar dataKey="target" fill="#d1d5db" radius={[4, 4, 0, 0]} />
@@ -110,7 +108,7 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Risk Trend */}
-          <Card className={`p-6 border border-border/50 ${mounted ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: '0.5s' }}>
+          <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-foreground">Risk Distribution Trend</h3>
               <p className="text-sm text-foreground/70 mt-1">Customer segmentation over time</p>
@@ -138,7 +136,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Customer Value Distribution */}
-        <Card className={`p-6 border border-border/50 ${mounted ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: '0.6s' }}>
+        <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-foreground">Customer Value Distribution</h3>
             <p className="text-sm text-foreground/70 mt-1">Total debt amount by customer segment</p>
@@ -162,23 +160,23 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Insights Section */}
-        <Card className={`p-6 border border-border/50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 ${mounted ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: '0.7s' }}>
+        <Card className="p-6 border border-border/50 bg-linear-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
           <h3 className="text-lg font-semibold text-foreground mb-4">Key Insights</h3>
           <div className="space-y-3">
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
+              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
               <p className="text-foreground/80">Your collection rate of 92.5% is excellent, indicating strong customer payment discipline.</p>
             </div>
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
+              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
               <p className="text-foreground/80">June saw the highest collections (₦1.25M), primarily driven by improved risk management.</p>
             </div>
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
+              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
               <p className="text-foreground/80">Your average collection time has improved by 2.1 days in the last month—keep up the momentum!</p>
             </div>
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
+              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
               <p className="text-foreground/80">Focus on the 11% high-risk customers to further reduce the bad debt ratio.</p>
             </div>
           </div>
