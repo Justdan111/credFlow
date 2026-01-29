@@ -22,7 +22,7 @@ const Footer = () => {
   const socials = ['Twitter', 'LinkedIn', 'Facebook'];
 
   return (
-    <footer className="bg-foreground text-background py-16">
+    <footer className="bg-foreground dark:bg-slate-700 text-background py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -85,33 +85,7 @@ export default function PaymentsPage() {
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Chart */}
-        <FadeInUp delay={0.3}>
-          <Card className="p-6 border border-border/50">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Weekly Collections</h3>
-              <p className="text-sm text-foreground/70 mt-1">Payment trends this month</p>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#f1f5f9',
-                  }}
-                />
-                <Bar dataKey="amount" fill="#7c3aed" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </FadeInUp>
-
-        {/* Payments Table */}
+         {/* Payments Table */}
         <FadeInUp delay={0.4}>
           <Card className="border border-border/50 overflow-hidden">
             <div className="p-6 border-b border-border/50 flex items-center justify-between">
@@ -171,6 +145,34 @@ export default function PaymentsPage() {
             </div>
           </Card>
         </FadeInUp>
+
+        {/* Chart */}
+        <FadeInUp delay={0.3}>
+          <Card className="p-6 border border-border/50">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-foreground">Weekly Collections</h3>
+              <p className="text-sm text-foreground/70 mt-1">Payment trends this month</p>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis stroke="#64748b" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f1f5f9',
+                  }}
+                />
+                <Bar dataKey="amount" fill="#7c3aed" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </FadeInUp>
+
+       
       </div>
   );
 }
