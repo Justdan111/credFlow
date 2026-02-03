@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ interface AnimatedTableProps {
 }
 
 export function AnimatedTable({ headers, rows, className = '' }: AnimatedTableProps) {
-  const tableVariants = {
+  const tableVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -29,12 +29,12 @@ export function AnimatedTable({ headers, rows, className = '' }: AnimatedTablePr
     },
   };
 
-  const rowVariants = {
+  const rowVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.3, ease: 'easeOut' },
+      transition: { duration: 0.3 },
     },
   };
 

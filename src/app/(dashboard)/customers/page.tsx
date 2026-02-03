@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Edit2, Trash2, Phone, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, ScaleIn } from '@/components/animations/motion-wrapper';
 
@@ -24,7 +23,6 @@ const Loading = () => null;
 export default function CustomersPage() {
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
