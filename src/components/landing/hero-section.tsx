@@ -44,13 +44,13 @@ const HeroSection = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 0.15, scale: 1 }}
         transition={{ duration: 1.5 }}
-        className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary rounded-full blur-[120px]"
+        className="absolute top-20 right-0 w-125 h-125 bg-primary rounded-full blur-[120px]"
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 0.1, scale: 1 }}
         transition={{ duration: 1.5, delay: 0.3 }}
-        className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent rounded-full blur-[100px]"
+        className="absolute bottom-0 left-0 w-100 h-100 bg-accent rounded-full blur-[100px]"
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
