@@ -4,16 +4,16 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Save } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'security', label: 'Security', icon: '🔒' },
-    { id: 'appearance', label: 'Appearance', icon: '🎨' },
+    { id: 'profile', label: 'Profile',  },
+    { id: 'notifications', label: 'Notifications',},
+    { id: 'security', label: 'Security', },
+    { id: 'appearance', label: 'Appearance',  },
   ];
 
   return (
@@ -36,7 +36,6 @@ export default function SettingsPage() {
                   : 'border-transparent text-foreground/70 hover:text-foreground'
               }`}
             >
-              <span className="mr-2">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
