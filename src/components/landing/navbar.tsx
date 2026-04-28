@@ -29,7 +29,7 @@ const Navbar = () => {
           whileHover={{ scale: 1.02 }}
         >
           <div className="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glow">
-            <DollarSign className="w-5 h-5 text-primary-foreground" />
+            <DollarSign className="w-5 h-5 text-primary" />
           </div>
           <span className="font-bold text-xl tracking-tight">CredFlow</span>
         </motion.div>
