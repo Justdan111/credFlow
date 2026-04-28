@@ -56,11 +56,11 @@ const CTASection = () => {
             <Sparkles className="w-8 h-8 text-primary-foreground" />
           </motion.div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-foreground">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
             Ready to Transform Your Debt Management?
           </h2>
           
-          <p className="text-lg sm:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-primary max-w-2xl mx-auto">
             Join hundreds of African SMEs using CredFlow to optimize their debt tracking and collections.
           </p>
 
@@ -85,7 +85,7 @@ const CTASection = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.6 }}
-            className="text-sm text-primary-foreground/60 pt-2"
+            className="text-sm text-primary pt-2"
           >
             No credit card required • 14-day free trial
           </motion.p>
