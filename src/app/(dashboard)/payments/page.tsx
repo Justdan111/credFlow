@@ -58,7 +58,7 @@ export default function PaymentsPage() {
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6" delay={0.1}>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10 h-full">
+              <Card className="p-6 border border-border/50 bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10 h-full">
                 <p className="text-sm font-medium text-foreground/70 mb-2">Total Collected</p>
                 <p className="text-3xl font-bold text-green-600">₦{(totalCollected / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-foreground/50 mt-2">This month</p>
@@ -67,7 +67,7 @@ export default function PaymentsPage() {
           </StaggerItem>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 h-full">
+              <Card className="p-6 border border-border/50 bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 h-full">
                 <p className="text-sm font-medium text-foreground/70 mb-2">Avg Payment</p>
                 <p className="text-3xl font-bold text-blue-600">₦{(avgPayment / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-foreground/50 mt-2">{payments.length} transactions</p>
@@ -76,7 +76,7 @@ export default function PaymentsPage() {
           </StaggerItem>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 h-full">
+              <Card className="p-6 border border-border/50 bg-linear-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 h-full">
                 <p className="text-sm font-medium text-foreground/70 mb-2">Success Rate</p>
                 <p className="text-3xl font-bold text-purple-600">98%</p>
                 <p className="text-xs text-foreground/50 mt-2">All successful</p>
