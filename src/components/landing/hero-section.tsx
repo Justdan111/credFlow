@@ -124,10 +124,10 @@ const HeroSection = () => {
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative h-[400px] lg:h-[500px]"
+            className="relative h-100 lg:h-125"
           >
             {/* Background card */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/10" />
+            <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/10" />
             
             {/* Floating cards grid */}
             <div className="absolute inset-0 flex items-center justify-center p-6">
