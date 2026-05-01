@@ -4,6 +4,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 import { Search, Plus, Edit2, Trash2, Phone, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -106,7 +107,9 @@ export default function CustomersPage() {
                       className="border-b border-border/50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-medium text-foreground">{customer.name}</div>
+                        <Link href={`/customers/${customer.id}`} className="font-medium text-foreground hover:text-purple-600 transition-colors">
+                          {customer.name}
+                        </Link>
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-1">
@@ -129,8 +132,10 @@ export default function CustomersPage() {
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
                           <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button variant="ghost" size="sm">
-                              <Edit2 className="w-4 h-4" />
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/customers/${customer.id}`}>
+                                <Edit2 className="w-4 h-4" />
+                              </Link>
                             </Button>
                           </motion.div>
                           <motion.div whileHover={{ scale: 1.1 }}>

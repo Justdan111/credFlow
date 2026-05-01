@@ -3,6 +3,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Plus, Eye, Edit2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -106,7 +107,10 @@ export default function DebtsPage() {
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6" delay={0.1}>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 h-full">
+              <Card
+                className="p-6 border border-border/50 h-full"
+                style={{ background: 'linear-gradient(135deg, rgba(239, 246, 255, 1) 0%, rgba(219, 234, 254, 0.5) 100%)' }}
+              >
                 <p className="text-sm font-medium text-foreground/70 mb-2">Total Debts</p>
                 <p className="text-3xl font-bold text-blue-600">₦{(totalDebt / 1000000).toFixed(1)}M</p>
                 <p className="text-xs text-foreground/50 mt-2">{debts.length} total records</p>
@@ -115,7 +119,10 @@ export default function DebtsPage() {
           </StaggerItem>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10 h-full">
+              <Card
+                className="p-6 border border-border/50 h-full"
+                style={{ background: 'linear-gradient(135deg, rgba(254, 242, 242, 1) 0%, rgba(254, 226, 226, 0.55) 100%)' }}
+              >
                 <p className="text-sm font-medium text-foreground/70 mb-2">Overdue Amount</p>
                 <p className="text-3xl font-bold text-red-600">₦{(overdueDebt / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-foreground/50 mt-2">{debts.filter((d) => d.status === 'Overdue').length} overdue</p>
@@ -124,7 +131,10 @@ export default function DebtsPage() {
           </StaggerItem>
           <StaggerItem>
             <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10 h-full">
+              <Card
+                className="p-6 border border-border/50 h-full"
+                style={{ background: 'linear-gradient(135deg, rgba(240, 253, 244, 1) 0%, rgba(220, 252, 231, 0.55) 100%)' }}
+              >
                 <p className="text-sm font-medium text-foreground/70 mb-2">Paid Debts</p>
                 <p className="text-3xl font-bold text-green-600">₦150K</p>
                 <p className="text-xs text-foreground/50 mt-2">{debts.filter((d) => d.status === 'Paid').length} completed</p>
@@ -175,13 +185,17 @@ export default function DebtsPage() {
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
                           <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/debts/${debt.id}`}>
+                                <Eye className="w-4 h-4" />
+                              </Link>
                             </Button>
                           </motion.div>
                           <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button variant="ghost" size="sm">
-                              <Edit2 className="w-4 h-4" />
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/debts/${debt.id}`}>
+                                <Edit2 className="w-4 h-4" />
+                              </Link>
                             </Button>
                           </motion.div>
                         </div>

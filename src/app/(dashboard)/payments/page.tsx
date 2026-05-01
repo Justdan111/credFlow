@@ -2,9 +2,9 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Plus, Download, Filter } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
 
@@ -24,12 +24,6 @@ const chartData = [
 ];
 
 export default function PaymentsPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const totalCollected = payments.reduce((sum, p) => sum + parseInt(p.amount.replace(/[^0-9]/g, '')), 0);
   const avgPayment = totalCollected / payments.length;
 
@@ -93,10 +87,15 @@ export default function PaymentsPage() {
                 <h3 className="text-lg font-semibold text-foreground">Recent Payments</h3>
                 <p className="text-sm text-foreground/70 mt-1">Last 5 transactions</p>
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/payments/1">View details</Link>
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -120,7 +119,11 @@ export default function PaymentsPage() {
                       whileHover={{ backgroundColor: 'rgba(124, 58, 237, 0.05)' }}
                       className="border-b border-border/50 transition-colors"
                     >
-                      <td className="px-6 py-4 font-medium text-foreground">{payment.customer}</td>
+                      <td className="px-6 py-4 font-medium text-foreground">
+                        <Link href={`/payments/${payment.id}`} className="hover:text-purple-600 transition-colors">
+                          {payment.customer}
+                        </Link>
+                      </td>
                       <td className="px-6 py-4 font-semibold text-green-600">{payment.amount}</td>
                       <td className="px-6 py-4 text-sm text-foreground/70">{payment.date}</td>
                       <td className="px-6 py-4">
