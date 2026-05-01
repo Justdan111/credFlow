@@ -3,6 +3,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import {
   DollarSign,
   AlertCircle,
@@ -39,6 +40,8 @@ const recentDebts = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   // Removed unused mounted state and effect
 
   const metrics = [
@@ -210,7 +213,7 @@ export default function DashboardPage() {
                   <h3 className="text-lg font-semibold text-foreground">Recent Debts</h3>
                   <p className="text-sm text-foreground/70 mt-1">Last 5 transactions</p>
                 </div>
-                <Button variant="outline" size="sm">View All</Button>
+                <Button onClick={() => router.push('/debts')} variant="outline" size="sm">View All</Button>
               </div>
             </div>
 
