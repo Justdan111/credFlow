@@ -7,6 +7,10 @@ import Footer from '@/components/landing/footer'
 import HeroSection from '@/components/landing/hero-section'
 import HowItWorksSection from '@/components/landing/how-it-woks'
 import Navbar from '@/components/landing/navbar'
+import PricingSection from '@/components/landing/pricing-section'
+import TestimonialsSection from '@/components/landing/testimonials-section'
+import FAQSection from '@/components/landing/faq-section'
+import ScreenshotsSection from '@/components/landing/screenshots-section'
 
 
 export default function page() {
@@ -17,6 +21,10 @@ export default function page() {
       <FeaturesSection />
       <HowItWorksSection />
       <BenefitsSection />
+      <ScreenshotsSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <FAQSection />
       <CTASection />
       <Footer />
     </div>

@@ -11,8 +11,7 @@ import {
   Mail,
   MapPin,
   Phone,
-  ShieldAlert,
-  Sparkles, TrendingUp, } from 'lucide-react';
+  ShieldAlert, Sparkles, TrendingUp, } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FadeInDown, FadeInUp, ScaleIn, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
