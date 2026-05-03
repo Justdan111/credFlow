@@ -5,10 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { Search, Plus, Edit2, Trash2, Phone, Mail } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Phone, Mail, MoreHorizontal, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, ScaleIn } from '@/components/animations/motion-wrapper';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { g } from 'framer-motion/client';
 
 const customers = [
   { id: 1, name: 'ABC Stores Ltd', phone: '08012345678', email: 'info@abc.com', totalDebt: '₦250,000', riskLevel: 'Medium' },
@@ -130,20 +132,28 @@ export default function CustomersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex justify-end gap-2">
-                          <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button asChild variant="ghost" size="sm">
-                              <Link href={`/customers/${customer.id}`}>
-                                <Edit2 className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          </motion.div>
-                          <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </motion.div>
-                        </div>
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                            <MoreHorizontal className="w-3.5 h-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-background w-44">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/customers/${customer.id}`}>
+                              <Eye className="w-3.5 h-3.5" />
+                              View details
+                            </Link>
+                          </DropdownMenuItem>
+                           <DropdownMenuItem asChild>
+                            <Link href={`/customers/${customer.id}`}>
+                              <Edit2 className="w-3.5 h-3.5" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       </td>
                     </motion.tr>
                   ))}
