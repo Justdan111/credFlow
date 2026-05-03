@@ -1,16 +1,16 @@
 'use client';
 
-
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Search, Plus, Edit2, Trash2, Phone, Mail, MoreHorizontal, Eye } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, ScaleIn } from '@/components/animations/motion-wrapper';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { g } from 'framer-motion/client';
+import { AddCustomerDialog } from '@/components/dialogs/add-customer-dialog';
+import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
 
 const customers = [
   { id: 1, name: 'ABC Stores Ltd', phone: '08012345678', email: 'info@abc.com', totalDebt: '₦250,000', riskLevel: 'Medium' },
@@ -24,12 +24,11 @@ const customers = [
 const Loading = () => null;
 
 export default function CustomersPage() {
-  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [addCustomerOpen, setAddCustomerOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filteredCustomers = customers.filter(
     (customer) =>
@@ -50,6 +49,26 @@ export default function CustomersPage() {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsDeleting(false);
+      setDeleteConfirmOpen(false);
+      setSelectedCustomerId(null);
+    }, 500);
+  };
+
+  const handleAddCustomer = (customer: { name: string; email: string; phone: string }) => {
+    // TODO: Add API integration
+    console.log('Adding customer:', customer);
+  };
+
+  const openDeleteDialog = (customerId: number) => {
+    setSelectedCustomerId(customerId);
+    setDeleteConfirmOpen(true);
+  };
+
   return (
       <div className="space-y-8 min-h-screen">
         {/* Header */}
@@ -59,7 +78,7 @@ export default function CustomersPage() {
               <h1 className="text-3xl font-bold text-foreground">Customers</h1>
               <p className="text-foreground/70 mt-2">Manage your customer database and relationships.</p>
             </div>
-            <Button className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
+            <Button className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto" onClick={() => setAddCustomerOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Customer
             </Button>
@@ -132,28 +151,36 @@ export default function CustomersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                            <MoreHorizontal className="w-3.5 h-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-background w-44">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/customers/${customer.id}`}>
-                              <Eye className="w-3.5 h-3.5" />
-                              View details
-                            </Link>
-                          </DropdownMenuItem>
-                           <DropdownMenuItem asChild>
-                            <Link href={`/customers/${customer.id}`}>
-                              <Edit2 className="w-3.5 h-3.5" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                          
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        <div className="flex justify-end gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-background border-border w-44">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/customers/${customer.id}`} className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4" />
+                                  View details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/customers/${customer.id}`} className="flex items-center gap-2">
+                                  <Edit2 className="w-4 h-4" />
+                                  Edit customer
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openDeleteDialog(customer.id)}
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </td>
                     </motion.tr>
                   ))}
@@ -171,6 +198,17 @@ export default function CustomersPage() {
             </div>
           </Card>
         </FadeInUp>
+
+        {/* Dialogs */}
+        <AddCustomerDialog open={addCustomerOpen} onOpenChange={setAddCustomerOpen} onAdd={handleAddCustomer} />
+        <DeleteConfirmationDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="Delete Customer"
+          description="Are you sure you want to delete this customer? This action cannot be undone."
+          onConfirm={handleDeleteConfirm}
+          isLoading={isDeleting}
+        />
       </div>
   );
 }

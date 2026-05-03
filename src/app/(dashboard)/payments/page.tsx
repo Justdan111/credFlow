@@ -3,10 +3,14 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Plus, Download, Filter } from 'lucide-react';
+import { Plus, Download, Filter, Eye, Edit2, Trash2, MoreHorizontal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
+import { useState } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RecordPaymentDialog } from '@/components/dialogs/record-payment-dialog';
+import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
 
 const payments = [
   { id: 1, customer: 'ABC Stores Ltd', amount: '₦50,000', date: '2026-02-10', method: 'Bank Transfer', reference: 'TRF001' },
@@ -24,8 +28,33 @@ const chartData = [
 ];
 
 export default function PaymentsPage() {
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const totalCollected = payments.reduce((sum, p) => sum + parseInt(p.amount.replace(/[^0-9]/g, '')), 0);
   const avgPayment = totalCollected / payments.length;
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsDeleting(false);
+      setDeleteConfirmOpen(false);
+      setSelectedPaymentId(null);
+    }, 500);
+  };
+
+  const handleRecordPayment = (payment: { customer: string; amount: string; date: string; method: string }) => {
+    // TODO: Add API integration
+    console.log('Recording payment:', payment);
+  };
+
+  const openDeleteDialog = (paymentId: number) => {
+    setSelectedPaymentId(paymentId);
+    setDeleteConfirmOpen(true);
+  };
 
   return (
       <div className="space-y-8">
@@ -37,7 +66,7 @@ export default function PaymentsPage() {
               <p className="text-foreground/70 mt-2">View and manage all payment transactions.</p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button className="bg-purple-600 hover:bg-purple-700 flex-1 sm:flex-none">
+              <Button className="bg-purple-600 hover:bg-purple-700 flex-1 sm:flex-none" onClick={() => setRecordPaymentOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Record Payment
               </Button>
@@ -107,6 +136,7 @@ export default function PaymentsPage() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Method</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Reference</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -132,6 +162,38 @@ export default function PaymentsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-foreground/70 font-mono">{payment.reference}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-background border-border w-44">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/payments/${payment.id}`} className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4" />
+                                  View details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/payments/${payment.id}`} className="flex items-center gap-2">
+                                  <Edit2 className="w-4 h-4" />
+                                  Edit payment
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openDeleteDialog(payment.id)}
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
                     </motion.tr>
                   ))}
                 </tbody>
@@ -175,7 +237,16 @@ export default function PaymentsPage() {
           </Card>
         </FadeInUp>
 
-       
+        {/* Dialogs */}
+        <RecordPaymentDialog open={recordPaymentOpen} onOpenChange={setRecordPaymentOpen} onRecord={handleRecordPayment} />
+        <DeleteConfirmationDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="Delete Payment"
+          description="Are you sure you want to delete this payment record? This action cannot be undone."
+          onConfirm={handleDeleteConfirm}
+          isLoading={isDeleting}
+        />
       </div>
   );
 }

@@ -1,13 +1,15 @@
 'use client';
 
-
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Plus, Eye, Edit2 } from 'lucide-react';
+import { Plus, Eye, Edit2, Trash2, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FadeInDown, FadeInUp, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RecordDebtDialog } from '@/components/dialogs/record-debt-dialog';
+import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
 
 const debts = [
   {
@@ -64,6 +66,10 @@ const debts = [
 
 export default function DebtsPage() {
   const [mounted, setMounted] = useState(false);
+  const [recordDebtOpen, setRecordDebtOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [selectedDebtId, setSelectedDebtId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -87,6 +93,26 @@ export default function DebtsPage() {
     .filter((d) => d.status === 'Overdue')
     .reduce((sum, debt) => sum + parseInt(debt.amount.replace(/[^0-9]/g, '')), 0);
 
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsDeleting(false);
+      setDeleteConfirmOpen(false);
+      setSelectedDebtId(null);
+    }, 500);
+  };
+
+  const handleRecordDebt = (debt: { customer: string; amount: string; dueDate: string }) => {
+    // TODO: Add API integration
+    console.log('Recording debt:', debt);
+  };
+
+  const openDeleteDialog = (debtId: number) => {
+    setSelectedDebtId(debtId);
+    setDeleteConfirmOpen(true);
+  };
+
   return (
       <div className="space-y-8">
         {/* Header */}
@@ -96,7 +122,7 @@ export default function DebtsPage() {
               <h1 className="text-3xl font-bold text-foreground">Debts</h1>
               <p className="text-foreground/70 mt-2">Track and manage all outstanding debts.</p>
             </div>
-            <Button className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
+            <Button className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto" onClick={() => setRecordDebtOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Record Debt
             </Button>
@@ -184,20 +210,34 @@ export default function DebtsPage() {
                       <td className="px-6 py-4 text-sm text-orange-600 font-semibold">{debt.interestAccrued}</td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
-                          <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button asChild variant="ghost" size="sm">
-                              <Link href={`/debts/${debt.id}`}>
-                                <Eye className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          </motion.div>
-                          <motion.div whileHover={{ scale: 1.1 }}>
-                            <Button asChild variant="ghost" size="sm">
-                              <Link href={`/debts/${debt.id}`}>
-                                <Edit2 className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          </motion.div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-background border-border w-44">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/debts/${debt.id}`} className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4" />
+                                  View details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/debts/${debt.id}`} className="flex items-center gap-2">
+                                  <Edit2 className="w-4 h-4" />
+                                  Edit debt
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openDeleteDialog(debt.id)}
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </td>
                     </motion.tr>
@@ -207,6 +247,17 @@ export default function DebtsPage() {
             </div>
           </Card>
         </FadeInUp>
+
+        {/* Dialogs */}
+        <RecordDebtDialog open={recordDebtOpen} onOpenChange={setRecordDebtOpen} onRecord={handleRecordDebt} />
+        <DeleteConfirmationDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="Delete Debt"
+          description="Are you sure you want to delete this debt record? This action cannot be undone."
+          onConfirm={handleDeleteConfirm}
+          isLoading={isDeleting}
+        />
       </div>
   );
 }
