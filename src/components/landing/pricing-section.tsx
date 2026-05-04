@@ -42,7 +42,7 @@ const PricingSection = () => {
                 ))}
               </ul>
               <div className="mt-6">
-                <Button variant={tier.popular ? 'primary' : 'default'}>
+                <Button variant={tier.popular ? 'secondary' : 'default'}>
                   {tier.popular ? 'Get Growth' : tier.price === 'Free' ? 'Start free' : 'Contact sales'}
                 </Button>
               </div>
