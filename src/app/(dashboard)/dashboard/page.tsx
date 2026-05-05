@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -9,9 +8,7 @@ import {
   AlertCircle,
   Users,
   TrendingUp,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
+  ArrowUp, ArrowDown, } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import { FadeInUp, FadeInDown, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
