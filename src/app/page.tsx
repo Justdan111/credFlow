@@ -1,32 +1,32 @@
-"use client"
+'use client';
 
-import BenefitsSection from '@/components/landing/benefits-section'
-import CTASection from '@/components/landing/cta-section'
-import FeaturesSection from '@/components/landing/features-section'
-import Footer from '@/components/landing/footer'
-import HeroSection from '@/components/landing/hero-section'
-import HowItWorksSection from '@/components/landing/how-it-woks'
-import Navbar from '@/components/landing/navbar'
-import PricingSection from '@/components/landing/pricing-section'
-import TestimonialsSection from '@/components/landing/testimonials-section'
-import FAQSection from '@/components/landing/faq-section'
-import ScreenshotsSection from '@/components/landing/screenshots-section'
+import Navbar from '@/components/landing/navbar';
+import HeroSection from '@/components/landing/hero-section';
+import QuickStartSection from '@/components/landing/how-it-woks';
+import ProductInActionSection from '@/components/landing/product-in-action-section';
+import BeforeAfterSection from '@/components/landing/before-after-section';
+import RoadmapSection from '@/components/landing/roadmap-section';
+import PricingSection from '@/components/landing/pricing-section';
+import FAQSection from '@/components/landing/faq-section';
+import CTASection from '@/components/landing/cta-section';
+import Footer from '@/components/landing/footer';
+import SmoothScroll from '@/components/smooth-scroll';
 
-
-export default function page() {
+export default function Page() {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <BenefitsSection />
-      <ScreenshotsSection />
-      <PricingSection />
-      <TestimonialsSection />
-      <FAQSection />
-      <CTASection />
-      <Footer />
-    </div>
-  )
+    <SmoothScroll>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <HeroSection />
+        <QuickStartSection />
+        <ProductInActionSection />
+        <BeforeAfterSection />
+        <RoadmapSection />
+        <PricingSection />
+        <FAQSection />
+        <CTASection />
+        <Footer />
+      </div>
+    </SmoothScroll>
+  );
 }

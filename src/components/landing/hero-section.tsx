@@ -50,9 +50,9 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 bg-background/70 backdrop-blur-md border border-primary/15 px-3.5 py-1.5 rounded-full mb-8 shadow-xs shadow-primary/5"
+          className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-md border border-primary/20 px-3.5 py-1.5 rounded-full mb-8 shadow-xs shadow-primary/10"
         >
-          <span className="text-xs font-medium text-foreground/80 tracking-wide">
+          <span className="text-xs font-medium text-primary tracking-wide">
             Built for African SMEs
           </span>
         </motion.div>

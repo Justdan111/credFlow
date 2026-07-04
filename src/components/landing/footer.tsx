@@ -1,123 +1,85 @@
-import { motion } from 'framer-motion';
-import { DollarSign } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 const Footer = () => {
-  const links = {
-    product: [
-      { label: 'Features', href: '#features' },
-      { label: 'Pricing', href: '#' },
-      { label: 'Security', href: '#' },
-    ],
-    company: [
-      { label: 'About', href: '#' },
-      { label: 'Blog', href: '#' },
-      { label: 'Contact', href: '#' },
-    ],
-    legal: [
-      { label: 'Privacy', href: '#' },
-      { label: 'Terms', href: '#' },
-    ],
-  };
-
-  const socials = ['Twitter', 'LinkedIn', 'Facebook'];
+  const columns = [
+    {
+      heading: 'Product',
+      links: [
+        { label: 'How it works', href: '#how' },
+        { label: 'Features', href: '#product' },
+        { label: 'Pricing', href: '#pricing' },
+        { label: 'Roadmap', href: '#roadmap' },
+      ],
+    },
+    {
+      heading: 'Company',
+      links: [
+        { label: 'About', href: '#' },
+        { label: 'Blog', href: '#' },
+        { label: 'Contact', href: '#' },
+      ],
+    },
+    {
+      heading: 'Legal',
+      links: [
+        { label: 'Privacy', href: '#' },
+        { label: 'Terms', href: '#' },
+      ],
+    },
+    {
+      heading: 'Socials',
+      links: [
+        { label: 'X (Twitter)', href: '#' },
+        { label: 'LinkedIn', href: '#' },
+      ],
+    },
+  ];
 
   return (
-    <footer className="bg-foreground dark:bg-slate-700 text-background py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12"
-        >
+    <footer className="border-t border-border bg-background">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
           {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-primary-foreground" />
+          <div className="col-span-2 md:col-span-1">
+            <a href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                <Wallet className="w-4 h-4 text-background" strokeWidth={2} />
               </div>
-              <span className="font-bold text-xl">CredFlow</span>
-            </div>
-            <p className="text-background/60 text-sm">
-              Smart debt tracking for African SMEs. Empowering businesses with better financial management.
+              <span className="font-semibold tracking-tight">CredFlow</span>
+            </a>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-55">
+              Smart debt tracking for African SMEs.
             </p>
           </div>
 
-          {/* Product Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-3">
-              {links.product.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/60 hover:text-background transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Columns */}
+          {columns.map((col) => (
+            <div key={col.heading}>
+              <p className="text-xs font-medium mb-4">{col.heading}</p>
+              <ul className="space-y-2.5">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
-          {/* Company Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-3">
-              {links.company.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/60 hover:text-background transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-3">
-              {links.legal.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/60 hover:text-background transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="border-t border-background/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
-        >
-          <p className="text-sm text-background/60">
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
             © 2026 CredFlow. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            {socials.map((social) => (
-              <a
-                key={social}
-                href="#"
-                className="text-sm text-background/60 hover:text-background transition-colors"
-              >
-                {social}
-              </a>
-            ))}
-          </div>
-        </motion.div>
+          <p className="text-xs text-muted-foreground">
+            Built for African SMEs · Made with care
+          </p>
+        </div>
       </div>
     </footer>
   );
