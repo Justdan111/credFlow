@@ -10,8 +10,8 @@ const faqs = [
     a: 'Right now CredFlow needs an internet connection to sync your data across devices. Offline mode is on our roadmap and coming later this year.',
   },
   {
-    q: 'Which mobile money providers do you support?',
-    a: 'You can record payments made via M-Pesa, MTN MoMo, Airtel Money, and cash or bank transfer today. Direct mobile-money integration (auto-matching payments) is shipping soon.',
+    q: 'Which payment providers do you support?',
+    a: 'You can record payments made via Paystack, Flutterwave, OPay, bank transfer, or cash today. Direct auto-matching for Paystack and Flutterwave is shipping soon.',
   },
   {
     q: 'How is my customer data protected?',
@@ -22,8 +22,8 @@ const faqs = [
     a: 'Team seats and role-based permissions are coming soon on the Growth and Business plans. Everyone in your business will get their own login with the right access.',
   },
   {
-    q: 'Do you work with NGN, KES, GHS, or other currencies?',
-    a: 'Yes. You can set your primary business currency on signup. Multi-currency support — for businesses that trade across borders — is on the roadmap.',
+    q: 'Do you work with NGN and other currencies?',
+    a: 'CredFlow is built for Naira first — that&apos;s our primary supported currency today. Multi-currency support for businesses that trade across borders is on the roadmap.',
   },
   {
     q: 'What happens after the free trial?',

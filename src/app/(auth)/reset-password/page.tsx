@@ -1,169 +1,207 @@
-'use client'
+'use client';
 
-import React from "react"
-
-import { useState } from 'react'
-import Link from 'next/link'
-import { Eye, EyeOff, Lock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, ArrowRight, Check, KeyRound } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function ResetPasswordPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [password, setPassword] = useState('');
+
+  const rules = [
+    { label: 'At least 8 characters', valid: password.length >= 8 },
+    { label: 'One uppercase letter', valid: /[A-Z]/.test(password) },
+    { label: 'One number', valid: /\d/.test(password) },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
     setTimeout(() => {
-      setIsLoading(false)
-      setIsSuccess(true)
-    }, 1000)
-  }
+      setIsLoading(false);
+      setIsSuccess(true);
+    }, 500);
+  };
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6">
-        <div className="w-full max-w-md animate-fadeInUp">
-          <div className="text-center space-y-6">
-            {/* Success Icon */}
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center animate-scaleIn">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-foreground">Password Reset Successfully</h1>
-              <p className="text-foreground/60">
-                Your password has been updated. You can now log in with your new password.
-              </p>
-            </div>
-
-            <Button
-              asChild
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 h-11 font-semibold"
-            >
-              <Link href="/login">Go to Login</Link>
-            </Button>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-sm text-center"
+        >
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mx-auto w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-6"
+          >
+            <Check className="w-5 h-5 text-primary" strokeWidth={2.5} />
+          </motion.div>
+          <h1 className="text-3xl sm:text-4xl font-semibold leading-[1.05] tracking-[-0.02em]">
+            Password reset.
+          </h1>
+          <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto">
+            Your password has been updated. You can now sign in with your new password.
+          </p>
+          <Button
+            asChild
+            className="w-full h-11 rounded-full mt-8 text-sm shadow-lg shadow-primary/20 ring-1 ring-inset ring-white/10"
+          >
+            <Link href="/login">
+              Go to sign in
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </Button>
+        </motion.div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6">
-      <div className="w-full max-w-md animate-fadeInUp">
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="space-y-2 text-center">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <span className="text-2xl font-bold text-foreground">CredFlow</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Reset Password</h1>
-            <p className="text-foreground/60 text-base">
-              Enter your new password below.
-            </p>
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-sm"
+      >
+        {/* Eyebrow */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-full mb-6">
+            <KeyRound className="w-3 h-3 text-primary" strokeWidth={2.25} />
+            <span className="text-xs font-medium text-primary tracking-wide">
+              New password
+            </span>
           </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* New Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">New Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-foreground/40" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your new password"
-                  required
-                  className="pl-10 pr-10 bg-muted border-border h-11"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-foreground/40 hover:text-foreground/60"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              <p className="text-xs text-foreground/50">
-                At least 8 characters, with uppercase, lowercase, and numbers.
-              </p>
-            </div>
-
-            {/* Confirm Password */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-foreground/40" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  required
-                  className="pl-10 pr-10 bg-muted border-border h-11"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-foreground/40 hover:text-foreground/60"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Password Requirements */}
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Password Requirements:</p>
-              <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-                  At least 8 characters
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-                  One uppercase letter
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-                  One number
-                </li>
-              </ul>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 h-11 font-semibold text-base"
-            >
-              {isLoading ? 'Resetting...' : 'Reset Password'}
-            </Button>
-          </form>
-
-          {/* Back to Login */}
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="text-sm text-foreground/70 hover:text-foreground transition-colors"
-            >
-              Remember your password?{' '}
-              <span className="text-primary hover:text-primary/80 font-semibold">Sign in</span>
-            </Link>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold leading-[1.05] tracking-[-0.02em]">
+            Set a new password.
+          </h1>
+          <p className="text-sm text-muted-foreground mt-3">
+            Choose a password you haven&apos;t used before.
+          </p>
         </div>
-      </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="password"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              New password
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="At least 8 characters"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border pr-10 focus-visible:border-primary/40 focus-visible:ring-primary/15"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="confirm"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Confirm password
+            </Label>
+            <div className="relative">
+              <Input
+                id="confirm"
+                type={showConfirm ? 'text' : 'password'}
+                placeholder="Re-enter password"
+                required
+                className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border pr-10 focus-visible:border-primary/40 focus-visible:ring-primary/15"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showConfirm ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Live rules */}
+          <ul className="space-y-1.5 pt-1">
+            {rules.map((r) => (
+              <li
+                key={r.label}
+                className="flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <div
+                  className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${
+                    r.valid ? 'bg-primary/15' : 'bg-muted/60'
+                  }`}
+                >
+                  <Check
+                    className={`w-2 h-2 transition-colors ${
+                      r.valid ? 'text-primary' : 'text-muted-foreground/50'
+                    }`}
+                    strokeWidth={3}
+                  />
+                </div>
+                <span
+                  className={
+                    r.valid ? 'text-foreground/80' : 'text-muted-foreground'
+                  }
+                >
+                  {r.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-11 rounded-full mt-4 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
+          >
+            {isLoading ? 'Resetting…' : 'Reset password'}
+            {!isLoading && <ArrowRight className="w-4 h-4" />}
+          </Button>
+        </form>
+
+        <p className="text-center text-xs text-muted-foreground mt-8">
+          Remembered it?{' '}
+          <Link
+            href="/login"
+            className="text-foreground font-medium hover:underline underline-offset-4"
+          >
+            Sign in
+          </Link>
+        </p>
+      </motion.div>
     </div>
-  )
+  );
 }

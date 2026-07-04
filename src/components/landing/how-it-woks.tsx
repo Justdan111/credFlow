@@ -54,7 +54,7 @@ const QuickStartSection = () => {
                 </div>
               </div>
             </div>
-            <div className="text-[10px] font-semibold text-foreground">KES 45,000</div>
+            <div className="text-[10px] font-semibold text-foreground">₦45,000</div>
           </div>
           <div className="rounded-md border border-border/70 bg-background/80 p-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ const QuickStartSection = () => {
                 <div className="text-[8px] text-warning">2 days late</div>
               </div>
             </div>
-            <div className="text-[10px] font-semibold">KES 120K</div>
+            <div className="text-[10px] font-semibold">₦120K</div>
           </div>
         </div>
       ),
@@ -84,7 +84,7 @@ const QuickStartSection = () => {
               +34%
             </div>
           </div>
-          <div className="text-sm font-semibold">KES 1.8M</div>
+          <div className="text-sm font-semibold">₦1.8M</div>
           <div className="flex items-end gap-1 h-10">
             {[35, 55, 40, 70, 60, 85, 90].map((h, i) => (
               <div key={i} className="flex-1 flex flex-col justify-end">

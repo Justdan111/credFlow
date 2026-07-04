@@ -127,10 +127,10 @@ const ProductInActionSection = () => {
 
 function CustomersPreview() {
   const rows = [
-    { name: 'John Mwangi', amt: 'KES 45,000', badge: 'Overdue', tone: 'destructive' },
-    { name: 'Sarah Okoye', amt: 'KES 120,000', badge: 'Due soon', tone: 'warning' },
-    { name: 'David Otieno', amt: 'KES 8,200', badge: 'Current', tone: 'success' },
-    { name: 'Grace Achieng', amt: 'KES 32,500', badge: 'Current', tone: 'success' },
+    { name: 'Chinedu Okafor', amt: '₦45,000', badge: 'Overdue', tone: 'destructive' },
+    { name: 'Adaeze Nwosu', amt: '₦120,000', badge: 'Due soon', tone: 'warning' },
+    { name: 'Tunde Adeyemi', amt: '₦8,200', badge: 'Current', tone: 'success' },
+    { name: 'Ngozi Bello', amt: '₦32,500', badge: 'Current', tone: 'success' },
   ];
   return (
     <div className="p-5">
@@ -184,9 +184,9 @@ function CustomersPreview() {
 
 function DebtsPreview() {
   const debts = [
-    { id: '#142', customer: 'John Mwangi', amt: 'KES 45,000', due: '5 days late', tone: 'destructive' },
-    { id: '#141', customer: 'Sarah Okoye', amt: 'KES 120,000', due: 'Due today', tone: 'warning' },
-    { id: '#140', customer: 'David Otieno', amt: 'KES 8,200', due: 'Due Dec 20', tone: 'muted' },
+    { id: '#142', customer: 'Chinedu Okafor', amt: '₦45,000', due: '5 days late', tone: 'destructive' },
+    { id: '#141', customer: 'Adaeze Nwosu', amt: '₦120,000', due: 'Due today', tone: 'warning' },
+    { id: '#140', customer: 'Tunde Adeyemi', amt: '₦8,200', due: 'Due Dec 20', tone: 'muted' },
   ];
   return (
     <div className="p-5">
@@ -241,13 +241,13 @@ function PaymentsPreview() {
     <div className="p-5">
       <div className="mb-4">
         <p className="text-sm font-semibold">Record payment</p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">John Mwangi · Invoice #142</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">Chinedu Okafor · Invoice #142</p>
       </div>
       <div className="space-y-3">
         <div>
           <p className="text-[10px] text-muted-foreground mb-1.5">Amount</p>
           <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-background/60">
-            <span className="text-[10px] text-muted-foreground">KES</span>
+            <span className="text-[10px] text-muted-foreground">₦</span>
             <span className="text-sm font-semibold">45,000</span>
             <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-success/10 text-success font-medium">
               Full balance
@@ -255,7 +255,7 @@ function PaymentsPreview() {
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {['Cash', 'Transfer', 'M-Pesa'].map((m, i) => (
+          {['Cash', 'Transfer', 'Paystack'].map((m, i) => (
             <div
               key={i}
               className={`text-center py-2 rounded-md border text-[10px] font-medium ${
@@ -272,7 +272,7 @@ function PaymentsPreview() {
           </div>
           <div>
             <p className="font-medium text-foreground">Receipt auto-generated</p>
-            <p className="text-[9px]">Sent to John via SMS + email</p>
+            <p className="text-[9px]">Sent to Chinedu via SMS + email</p>
           </div>
         </div>
       </div>

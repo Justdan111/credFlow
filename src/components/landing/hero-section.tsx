@@ -1,292 +1,258 @@
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, ArrowUpRight, Search, Bell, Users, Wallet, TrendingUp, LayoutDashboard, Receipt, BarChart3 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
+const tags = [
+  'retail',
+  'wholesale',
+  'services',
+  'agriculture',
+  'manufacturing',
+  'exports',
+];
+
+const tiles = [
+  { label: 'Dashboard', bg: 'bg-[oklch(0.28_0.09_293)]', text: 'text-white', accent: 'bg-primary/60' },
+  { label: 'Customers', bg: 'bg-[oklch(0.94_0.04_75)]', text: 'text-foreground', accent: 'bg-warning/50' },
+  { label: 'Debts', bg: 'bg-foreground', text: 'text-background', accent: 'bg-destructive/60' },
+  { label: 'Payments', bg: 'bg-[oklch(0.9_0.06_145)]', text: 'text-foreground', accent: 'bg-success/50' },
+  { label: 'Analytics', bg: 'bg-[oklch(0.35_0.07_254)]', text: 'text-white', accent: 'bg-info/60' },
+  { label: 'Reports', bg: 'bg-[oklch(0.92_0.04_350)]', text: 'text-foreground', accent: 'bg-accent/40' },
+  { label: 'Reminders', bg: 'bg-[oklch(0.95_0.03_293)]', text: 'text-foreground', accent: 'bg-primary/30' },
+  { label: 'Receipts', bg: 'bg-[oklch(0.22_0.02_264)]', text: 'text-white', accent: 'bg-muted-foreground/40' },
+];
 
 const HeroSection = () => {
-  const router = useRouter();
-
   return (
-    <section className="relative pt-32 sm:pt-40 pb-20 sm:pb-28 overflow-hidden">
-      {/* Layered watercolor wash */}
-      <div className="absolute inset-0 -z-10">
-        {/* Main violet wash — top right */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.6 }}
-          className="absolute -top-32 -right-20 w-180 h-180 bg-primary/25 rounded-full blur-[160px]"
-        />
-        {/* Secondary wash — top left */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, delay: 0.15 }}
-          className="absolute -top-10 -left-32 w-140 h-140 bg-primary/15 rounded-full blur-[140px]"
-        />
-        {/* Accent wash — mid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, delay: 0.3 }}
-          className="absolute top-60 left-1/3 w-125 h-125 bg-accent/12 rounded-full blur-[150px]"
-        />
-        {/* Fade to background */}
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-background" />
-
-        {/* Subtle grain noise for watercolor feel */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.15] mix-blend-overlay" xmlns="http://www.w3.org/2000/svg">
-          <filter id="hero-noise">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
-            <feColorMatrix values="0 0 0 0 0.35 0 0 0 0 0.15 0 0 0 0 0.55 0 0 0 0.6 0" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#hero-noise)" />
-        </svg>
+    <section className="relative pt-32 sm:pt-40 pb-16 overflow-hidden">
+      {/* Subtle top glow only */}
+      <div className="absolute inset-x-0 top-0 -z-10 h-96 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-160 h-96 bg-primary/8 rounded-full blur-[140px]" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-md border border-primary/20 px-3.5 py-1.5 rounded-full mb-8 shadow-xs shadow-primary/10"
-        >
-          <span className="text-xs font-medium text-primary tracking-wide">
-            Built for African SMEs
-          </span>
-        </motion.div>
-
-        {/* Headline — bigger, tighter */}
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Quote */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-5xl sm:text-7xl lg:text-[5.5rem] font-semibold leading-[0.98] tracking-[-0.03em] text-foreground"
+          transition={{ duration: 0.8 }}
+          className="font-serif text-5xl sm:text-6xl lg:text-[5rem] leading-[1.05] text-center text-foreground max-w-4xl mx-auto tracking-tight"
         >
-          Know who owes you.
-          <br />
-          <span className="text-foreground/50">And when they&apos;ll pay.</span>
+          &ldquo;Know exactly who owes you<br className="hidden sm:block" /> — and when they&rsquo;ll pay.&rdquo;
         </motion.h1>
 
-        {/* Sub */}
+        {/* Attribution */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mt-7 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+          transition={{ duration: 0.7, delay: 0.25 }}
+          className="mt-8 text-center text-base sm:text-lg font-semibold text-foreground"
         >
-          Stop chasing debts across WhatsApp threads and notebooks. CredFlow gives you
-          one dashboard for customer debts, payments, and cash flow — so you always
-          know who to call next.
+          — Built for African SMEs
         </motion.p>
 
-        {/* CTAs */}
+        {/* Chip pills */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-5"
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-1.5"
         >
-          <Button
-            size="lg"
-            onClick={() => router.push('/register')}
-            className="rounded-full px-7 h-12 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
-          >
-            Start tracking debts
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-          <a
-            href="#how"
-            className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            See how it works
-            <span className="transition-transform group-hover:translate-y-0.5">↓</span>
-          </a>
-        </motion.div>
-
-        {/* Dashboard placeholder — detailed mock */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.5 }}
-          className="mt-20 sm:mt-24"
-        >
-          <div className="relative mx-auto max-w-6xl">
-            {/* Soft glow behind */}
-            <div className="absolute -inset-8 bg-linear-to-tr from-primary/25 via-accent/10 to-primary/25 rounded-[2rem] blur-3xl opacity-70" />
-
-            {/* Frame */}
-            <div className="relative rounded-2xl border border-border/60 bg-card/90 backdrop-blur-xs shadow-2xl shadow-primary/10 overflow-hidden">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/60 bg-muted/40">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-destructive/40" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-warning/40" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-success/40" />
-                </div>
-                <div className="mx-auto flex items-center gap-1.5 px-3 py-1 rounded-md bg-background/60 border border-border/60 text-[10px] text-muted-foreground">
-                  <span className="w-1 h-1 rounded-full bg-success" />
-                  app.credflow.co/dashboard
-                </div>
-              </div>
-
-              {/* App layout: sidebar + main */}
-              <div className="flex min-h-110 sm:min-h-130">
-                {/* Sidebar */}
-                <div className="hidden sm:flex w-48 border-r border-border/60 bg-muted/20 flex-col py-5 px-3 gap-1">
-                  <div className="flex items-center gap-2 px-2 pb-4 mb-2 border-b border-border/60">
-                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                      <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
-                    </div>
-                    <span className="text-xs font-semibold tracking-tight">CredFlow</span>
-                  </div>
-                  {[
-                    { icon: LayoutDashboard, label: 'Dashboard', active: true },
-                    { icon: Users, label: 'Customers' },
-                    { icon: Receipt, label: 'Debts' },
-                    { icon: Wallet, label: 'Payments' },
-                    { icon: BarChart3, label: 'Analytics' },
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] ${
-                        item.active
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      <item.icon className="w-3.5 h-3.5" strokeWidth={1.75} />
-                      {item.label}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Main */}
-                <div className="flex-1 p-4 sm:p-6 flex flex-col gap-4 sm:gap-5">
-                  {/* Top bar */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 max-w-xs flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-border/60 bg-background/60 text-[10px] text-muted-foreground">
-                      <Search className="w-3 h-3" />
-                      Search customers, debts…
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-md border border-border/60 flex items-center justify-center">
-                        <Bell className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                      <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-medium text-primary">
-                        AK
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Page title */}
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                        Dashboard
-                      </p>
-                      <h3 className="text-base sm:text-lg font-semibold tracking-tight">
-                        Welcome back, Amina
-                      </h3>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-[10px] text-primary">
-                      <TrendingUp className="w-3 h-3" />
-                      +12% this week
-                    </div>
-                  </div>
-
-                  {/* Metric cards */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: 'Outstanding', value: 'KES 2.4M', trend: '+8%', color: 'text-foreground' },
-                      { label: 'Overdue', value: '8', trend: '3 new', color: 'text-destructive' },
-                      { label: 'Collected', value: '45%', trend: '+12%', color: 'text-success' },
-                    ].map((m, i) => (
-                      <div key={i} className="rounded-lg border border-border/60 bg-background/60 p-3">
-                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                          {m.label}
-                        </p>
-                        <p className={`text-sm sm:text-base font-semibold mt-1 ${m.color}`}>
-                          {m.value}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">{m.trend}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Chart + list side by side */}
-                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 flex-1">
-                    {/* Chart */}
-                    <div className="sm:col-span-3 rounded-lg border border-border/60 bg-background/60 p-3 flex flex-col">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-medium">Collections trend</p>
-                        <p className="text-[9px] text-muted-foreground">Last 30 days</p>
-                      </div>
-                      <svg viewBox="0 0 300 100" className="w-full flex-1" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="oklch(0.588 0.233 293)" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="oklch(0.588 0.233 293)" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d="M0,80 L30,72 L60,78 L90,60 L120,55 L150,45 L180,50 L210,35 L240,30 L270,20 L300,15 L300,100 L0,100 Z"
-                          fill="url(#chart-fill)"
-                        />
-                        <path
-                          d="M0,80 L30,72 L60,78 L90,60 L120,55 L150,45 L180,50 L210,35 L240,30 L270,20 L300,15"
-                          fill="none"
-                          stroke="oklch(0.588 0.233 293)"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-
-                    {/* Recent list */}
-                    <div className="sm:col-span-2 rounded-lg border border-border/60 bg-background/60 p-3">
-                      <div className="flex items-center justify-between mb-2.5">
-                        <p className="text-[10px] font-medium">Needs attention</p>
-                        <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { name: 'John Mwangi', amt: 'KES 45K', status: '5d late' },
-                          { name: 'Sarah Okoye', amt: 'KES 120K', status: '2d late' },
-                          { name: 'David Otieno', amt: 'KES 8.2K', status: 'Due today' },
-                        ].map((r, i) => (
-                          <div key={i} className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[8px] font-medium shrink-0">
-                                {r.name.charAt(0)}
-                              </div>
-                              <p className="text-[10px] truncate">{r.name}</p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className="text-[10px] font-medium">{r.amt}</p>
-                              <p className="text-[8px] text-destructive/80">{r.status}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Placeholder ribbon — corner */}
-            <div className="absolute top-3 right-3 z-10 hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-background/80 backdrop-blur-md border border-border/60 text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
-              <span className="w-1 h-1 rounded-full bg-warning animate-pulse" />
-              Preview mock
-            </div>
-          </div>
+          {tags.map((t) => (
+            <span
+              key={t}
+              className="text-xs px-3 py-1.5 rounded-full border border-border bg-background/60 backdrop-blur-xs text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors cursor-default"
+            >
+              {t}
+            </span>
+          ))}
         </motion.div>
       </div>
+
+      {/* Bottom tile row */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.55 }}
+        className="mt-20 sm:mt-24 max-w-7xl mx-auto px-2 sm:px-3"
+      >
+        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-1.5 sm:gap-2">
+          {tiles.map((tile, i) => (
+            <motion.div
+              key={tile.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 + i * 0.05 }}
+              whileHover={{ y: -4 }}
+              className={`group relative aspect-3/4 rounded-lg sm:rounded-xl overflow-hidden cursor-pointer ${tile.bg}`}
+            >
+              {/* Abstract art per tile */}
+              <TileArt label={tile.label} accent={tile.accent} textColor={tile.text} />
+
+              {/* Label bottom-left */}
+              <div className={`absolute bottom-2 left-2 sm:bottom-3 sm:left-3 ${tile.text}`}>
+                <p className="text-[10px] sm:text-xs font-medium tracking-tight">
+                  {tile.label}
+                </p>
+              </div>
+
+              {/* Subtle top-right marker on hover */}
+              <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 rounded-full ${tile.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
     </section>
   );
 };
+
+function TileArt({
+  label,
+  accent,
+  textColor,
+}: {
+  label: string;
+  accent: string;
+  textColor: string;
+}) {
+  const isDark = textColor === 'text-white' || textColor === 'text-background';
+  const strokeColor = isDark ? 'stroke-white/25' : 'stroke-foreground/20';
+  const fillColor = isDark ? 'fill-white/20' : 'fill-foreground/15';
+
+  if (label === 'Dashboard') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <path
+          d="M5 90 Q 25 60, 50 65 T 95 30"
+          className={strokeColor}
+          strokeWidth="1.5"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <circle cx="95" cy="30" r="3" className={fillColor} />
+      </svg>
+    );
+  }
+  if (label === 'Customers') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        {[
+          { x: 30, y: 40 },
+          { x: 55, y: 55 },
+          { x: 40, y: 75 },
+          { x: 65, y: 85 },
+        ].map((c, i) => (
+          <circle key={i} cx={c.x} cy={c.y} r="8" className={fillColor} />
+        ))}
+      </svg>
+    );
+  }
+  if (label === 'Debts') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        {[35, 55, 75].map((y, i) => (
+          <rect key={i} x="18" y={y} width="64" height="10" rx="2" className={fillColor} />
+        ))}
+      </svg>
+    );
+  }
+  if (label === 'Payments') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <path
+          d="M28 65 L 45 82 L 74 50"
+          className={strokeColor}
+          strokeWidth="3"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (label === 'Analytics') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        {[
+          { x: 20, h: 30 },
+          { x: 35, h: 50 },
+          { x: 50, h: 40 },
+          { x: 65, h: 65 },
+          { x: 80, h: 55 },
+        ].map((b, i) => (
+          <rect
+            key={i}
+            x={b.x}
+            y={95 - b.h}
+            width="8"
+            height={b.h}
+            rx="1"
+            className={fillColor}
+          />
+        ))}
+      </svg>
+    );
+  }
+  if (label === 'Reports') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <circle
+          cx="50"
+          cy="65"
+          r="22"
+          fill="none"
+          strokeWidth="8"
+          className={strokeColor}
+        />
+        <path
+          d="M50 43 A 22 22 0 0 1 72 65"
+          fill="none"
+          strokeWidth="8"
+          className={strokeColor}
+          strokeOpacity="0.7"
+        />
+      </svg>
+    );
+  }
+  if (label === 'Reminders') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <circle cx="50" cy="60" r="18" fill="none" strokeWidth="2" className={strokeColor} />
+        <line
+          x1="50"
+          y1="60"
+          x2="50"
+          y2="46"
+          className={strokeColor}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="50"
+          y1="60"
+          x2="60"
+          y2="63"
+          className={strokeColor}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (label === 'Receipts') {
+    return (
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <path
+          d="M28 25 L 72 25 L 72 95 L 62 87 L 50 95 L 38 87 L 28 95 Z"
+          fill="none"
+          strokeWidth="1.5"
+          className={strokeColor}
+        />
+        <line x1="36" y1="45" x2="64" y2="45" strokeWidth="1.5" className={strokeColor} />
+        <line x1="36" y1="58" x2="58" y2="58" strokeWidth="1.5" className={strokeColor} />
+        <line x1="36" y1="71" x2="64" y2="71" strokeWidth="1.5" className={strokeColor} />
+      </svg>
+    );
+  }
+  return <div className={`absolute inset-0 ${accent} opacity-20`} />;
+}
 
 export default HeroSection;

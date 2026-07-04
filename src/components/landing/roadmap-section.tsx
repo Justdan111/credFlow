@@ -14,7 +14,7 @@ const items: { label: string; status: Status }[] = [
   { label: 'Dark mode', status: 'shipped' },
 
   { label: 'SMS reminders', status: 'soon' },
-  { label: 'M-Pesa integration', status: 'soon' },
+  { label: 'Paystack integration', status: 'soon' },
   { label: 'Team seats', status: 'soon' },
   { label: 'Bulk actions', status: 'soon' },
 
