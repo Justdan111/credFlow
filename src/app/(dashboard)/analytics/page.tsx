@@ -1,18 +1,27 @@
 'use client';
 
-
-import { Card } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, TrendingDown } from 'lucide-react';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 const collectionData = [
-  { month: 'Jan', target: 1000000, actual: 850000 },
-  { month: 'Feb', target: 1000000, actual: 920000 },
-  { month: 'Mar', target: 1200000, actual: 1050000 },
-  { month: 'Apr', target: 1200000, actual: 1180000 },
-  { month: 'May', target: 1200000, actual: 1100000 },
-  { month: 'Jun', target: 1300000, actual: 1250000 },
+  { month: 'Jan', target: 1.0, actual: 0.85 },
+  { month: 'Feb', target: 1.0, actual: 0.92 },
+  { month: 'Mar', target: 1.2, actual: 1.05 },
+  { month: 'Apr', target: 1.2, actual: 1.18 },
+  { month: 'May', target: 1.2, actual: 1.1 },
+  { month: 'Jun', target: 1.3, actual: 1.25 },
 ];
 
 const riskTrendData = [
@@ -25,162 +34,212 @@ const riskTrendData = [
 ];
 
 const customerValueData = [
-  { range: '0-100K', count: 120 },
-  { range: '100K-500K', count: 450 },
-  { range: '500K-1M', count: 380 },
-  { range: '1M+', count: 284 },
+  { range: '₦1M+', count: 284 },
+  { range: '₦500K–1M', count: 380 },
+  { range: '₦100K–500K', count: 450 },
+  { range: '<₦100K', count: 120 },
+];
+
+const insights = [
+  { title: 'Collection rate', value: '92.5%', change: '+3.2%', trend: 'up', good: true },
+  { title: 'Avg days to collect', value: '18.3', change: '-2.1', trend: 'down', good: true },
+  { title: 'Customer retention', value: '94.8%', change: '+1.5%', trend: 'up', good: true },
+  { title: 'Bad debt ratio', value: '2.3%', change: '-0.8%', trend: 'down', good: true },
+];
+
+const takeaways = [
+  '92.5% collection rate is excellent — your customers are paying on time.',
+  'June saw ₦1.25M collected, your strongest month driven by better risk scoring.',
+  'Days-to-collect improved by 2.1 days — reminders are working.',
+  'The 11% high-risk segment holds the biggest recovery opportunity.',
 ];
 
 export default function AnalyticsPage() {
-
-  const insights = [
-    { title: 'Collection Rate', value: '92.5%', change: '+3.2%', trend: 'up' },
-    { title: 'Avg Days to Collect', value: '18.3', change: '-2.1', trend: 'down' },
-    { title: 'Customer Retention', value: '94.8%', change: '+1.5%', trend: 'up' },
-    { title: 'Bad Debt Ratio', value: '2.3%', change: '-0.8%', trend: 'down' },
-  ];
-
   return (
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fadeInDown">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
-            <p className="text-foreground/70 mt-2">Deep insights into your debt and collection performance.</p>
-          </div>
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export Report
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-7xl mx-auto space-y-6"
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-medium mb-1">
+            Analytics
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em]">
+            Your business, in numbers
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Deep insights into cash flow, risk, and collection performance.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-full text-xs h-9">
+            Last 6 months
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-full text-xs h-9">
+            <Download className="w-3.5 h-3.5" />
+            Export
           </Button>
         </div>
+      </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {insights.map((insight, index) => (
-            <Card
-              key={index}
-              className="p-6 border border-border/50 hover:border-purple-300 transition-all animate-scaleIn"
-              style={{ animationDelay: `${index * 0.1}s` }}
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {insights.map((k) => {
+          const isGood = k.good;
+          return (
+            <div
+              key={k.title}
+              className="rounded-2xl border border-border bg-card p-5 hover:border-primary/20 transition"
             >
-              <p className="text-sm text-foreground/70 mb-2">{insight.title}</p>
-              <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold text-foreground">{insight.value}</p>
-                <div className={`flex items-center gap-1 text-sm font-semibold ${insight.trend === 'up' ? 'text-green-600' : 'text-blue-600'}`}>
-                  {insight.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  {insight.change}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+                  {k.title}
+                </p>
+                <div
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${
+                    isGood ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
+                  }`}
+                >
+                  {k.trend === 'up' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
+                  {k.change}
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Collection Performance */}
-          <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Collection Performance</h3>
-              <p className="text-sm text-foreground/70 mt-1">Target vs Actual Collections</p>
+              <p className="text-2xl sm:text-3xl font-semibold tracking-tight">{k.value}</p>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={collectionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#f1f5f9',
-                  }}
-                  formatter={(value) => {
-                    const num = typeof value === 'number' ? value : Number(value);
-                    if (isNaN(num)) return '₦0M';
-                    return `₦${(num / 1000000).toFixed(1)}M`;
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="target" fill="#d1d5db" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="actual" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
+          );
+        })}
+      </div>
 
-          {/* Risk Trend */}
-          <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Risk Distribution Trend</h3>
-              <p className="text-sm text-foreground/70 mt-1">Customer segmentation over time</p>
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Target vs actual */}
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <p className="text-sm font-semibold">Collection performance</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Target vs actual, in ₦M</p>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={riskTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#f1f5f9',
-                  }}
-                />
-                <Legend />
-                <Area type="monotone" dataKey="low" stackId="1" fill="#22c55e" />
-                <Area type="monotone" dataKey="medium" stackId="1" fill="#f59e0b" />
-                <Area type="monotone" dataKey="high" stackId="1" fill="#ef4444" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
-
-        {/* Customer Value Distribution */}
-        <Card className="p-6 border border-border/50 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-foreground">Customer Value Distribution</h3>
-            <p className="text-sm text-foreground/70 mt-1">Total debt amount by customer segment</p>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <span className="text-muted-foreground">Actual</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                <span className="text-muted-foreground">Target</span>
+              </span>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={customerValueData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis type="number" stroke="#64748b" style={{ fontSize: '12px' }} />
-              <YAxis dataKey="range" type="category" stroke="#64748b" style={{ fontSize: '12px' }} />
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={collectionData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.912 0.058 293)" vertical={false} />
+              <XAxis dataKey="month" stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
-                  color: '#f1f5f9',
+                  fontSize: '12px',
                 }}
+                formatter={(v) => `₦${v}M`}
               />
-              <Bar dataKey="count" fill="#3b82f6" radius={[0, 8, 8, 0]} />
+              <Bar dataKey="target" fill="oklch(0.588 0.233 293 / 0.15)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="actual" fill="oklch(0.588 0.233 293)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </Card>
+        </div>
 
-        {/* Insights Section */}
-        <Card className="p-6 border border-border/50 bg-linear-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Key Insights</h3>
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
-              <p className="text-foreground/80">Your collection rate of 92.5% is excellent, indicating strong customer payment discipline.</p>
+        {/* Risk trend */}
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <p className="text-sm font-semibold">Risk distribution</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Customer segments over time</p>
             </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
-              <p className="text-foreground/80">June saw the highest collections (₦1.25M), primarily driven by improved risk management.</p>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
-              <p className="text-foreground/80">Your average collection time has improved by 2.1 days in the last month—keep up the momentum!</p>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 shrink-0" />
-              <p className="text-foreground/80">Focus on the 11% high-risk customers to further reduce the bad debt ratio.</p>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-success" />
+                <span className="text-muted-foreground">Low</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-warning" />
+                <span className="text-muted-foreground">Med</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-destructive" />
+                <span className="text-muted-foreground">High</span>
+              </span>
             </div>
           </div>
-        </Card>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={riskTrendData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.912 0.058 293)" vertical={false} />
+              <XAxis dataKey="month" stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+              />
+              <Area type="monotone" dataKey="low" stackId="1" stroke="oklch(0.698 0.195 145)" fill="oklch(0.698 0.195 145 / 0.4)" />
+              <Area type="monotone" dataKey="medium" stackId="1" stroke="oklch(0.745 0.155 75)" fill="oklch(0.745 0.155 75 / 0.4)" />
+              <Area type="monotone" dataKey="high" stackId="1" stroke="oklch(0.628 0.258 27)" fill="oklch(0.628 0.258 27 / 0.4)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
+
+      {/* Customer value distribution */}
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+        <div className="mb-6">
+          <p className="text-sm font-semibold">Customer value distribution</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Number of customers by debt-size segment</p>
+        </div>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={customerValueData} layout="vertical" margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.912 0.058 293)" horizontal={false} />
+            <XAxis type="number" stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis dataKey="range" type="category" stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} width={80} />
+            <Tooltip
+              contentStyle={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                fontSize: '12px',
+              }}
+            />
+            <Bar dataKey="count" fill="oklch(0.588 0.233 293)" radius={[0, 6, 6, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Insights */}
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <p className="text-sm font-semibold">Key insights</p>
+        </div>
+        <div className="space-y-3">
+          {takeaways.map((t, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="text-[10px] font-mono text-muted-foreground mt-1 shrink-0">
+                0{i + 1}
+              </span>
+              <p className="text-sm text-foreground/85 leading-relaxed">{t}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 }

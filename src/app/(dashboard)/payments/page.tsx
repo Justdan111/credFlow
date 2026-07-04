@@ -1,44 +1,80 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Plus, Download, Filter, Eye, Edit2, Trash2, MoreHorizontal } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  Plus,
+  Download,
+  Eye,
+  Edit2,
+  Trash2,
+  MoreHorizontal,
+  Search,
+  Filter,
+  ArrowUp,
+} from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { motion } from 'framer-motion';
-import { FadeInDown, FadeInUp, StaggerContainer, StaggerItem } from '@/components/animations/motion-wrapper';
 import { useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { RecordPaymentDialog } from '@/components/dialogs/record-payment-dialog';
 import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
 
 const payments = [
-  { id: 1, customer: 'ABC Stores Ltd', amount: '₦50,000', date: '2026-02-10', method: 'Bank Transfer', reference: 'TRF001' },
-  { id: 2, customer: 'XYZ Retail', amount: '₦45,000', date: '2026-02-08', method: 'Cash', reference: 'CASH001' },
-  { id: 3, customer: 'Fashion Hub', amount: '₦150,000', date: '2026-02-05', method: 'Bank Transfer', reference: 'TRF002' },
-  { id: 4, customer: 'Tech Solutions', amount: '₦80,000', date: '2026-02-01', method: 'Mobile Money', reference: 'MM001' },
-  { id: 5, customer: 'Food & Drinks Co', amount: '₦120,000', date: '2026-01-28', method: 'Bank Transfer', reference: 'TRF003' },
+  { id: 1, customer: 'ABC Stores Ltd', amount: '₦50,000', date: 'Feb 10, 2026', method: 'Bank Transfer', reference: 'TRF001' },
+  { id: 2, customer: 'XYZ Retail', amount: '₦45,000', date: 'Feb 8, 2026', method: 'Cash', reference: 'CASH001' },
+  { id: 3, customer: 'Fashion Hub', amount: '₦150,000', date: 'Feb 5, 2026', method: 'Bank Transfer', reference: 'TRF002' },
+  { id: 4, customer: 'Tech Solutions', amount: '₦80,000', date: 'Feb 1, 2026', method: 'Paystack', reference: 'PS001' },
+  { id: 5, customer: 'Food & Drinks Co', amount: '₦120,000', date: 'Jan 28, 2026', method: 'Bank Transfer', reference: 'TRF003' },
 ];
 
 const chartData = [
-  { month: 'Week 1', amount: 150000 },
-  { month: 'Week 2', amount: 180000 },
-  { month: 'Week 3', amount: 165000 },
-  { month: 'Week 4', amount: 210000 },
+  { week: 'Week 1', amount: 150 },
+  { week: 'Week 2', amount: 180 },
+  { week: 'Week 3', amount: 165 },
+  { week: 'Week 4', amount: 210 },
 ];
+
+const methodFilters = ['All', 'Bank Transfer', 'Cash', 'Paystack'];
 
 export default function PaymentsPage() {
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [, setSelectedPaymentId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeMethod, setActiveMethod] = useState('All');
+
+  const filtered = payments.filter((p) => {
+    const matchesSearch = p.customer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesMethod = activeMethod === 'All' || p.method === activeMethod;
+    return matchesSearch && matchesMethod;
+  });
 
   const totalCollected = payments.reduce((sum, p) => sum + parseInt(p.amount.replace(/[^0-9]/g, '')), 0);
   const avgPayment = totalCollected / payments.length;
 
+  const kpis = [
+    { label: 'Collected', value: `₦${(totalCollected / 1000).toFixed(0)}K`, change: '+23%', hint: 'This month' },
+    { label: 'Avg payment', value: `₦${(avgPayment / 1000).toFixed(0)}K`, change: '+8%', hint: `${payments.length} transactions` },
+    { label: 'Success rate', value: '98%', change: '+2%', hint: 'All successful' },
+  ];
+
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
-    // Simulate API call
     setTimeout(() => {
       setIsDeleting(false);
       setDeleteConfirmOpen(false);
@@ -47,206 +83,211 @@ export default function PaymentsPage() {
   };
 
   const handleRecordPayment = (payment: { customer: string; amount: string; date: string; method: string }) => {
-    // TODO: Add API integration
     console.log('Recording payment:', payment);
   };
 
-  const openDeleteDialog = (paymentId: number) => {
-    setSelectedPaymentId(paymentId);
+  const openDeleteDialog = (id: number) => {
+    setSelectedPaymentId(id);
     setDeleteConfirmOpen(true);
   };
 
   return (
-      <div className="space-y-8">
-        {/* Header */}
-        <FadeInDown>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Payments</h1>
-              <p className="text-foreground/70 mt-2">View and manage all payment transactions.</p>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button className="bg-purple-600 hover:bg-purple-700 flex-1 sm:flex-none" onClick={() => setRecordPaymentOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Record Payment
-              </Button>
-              <Button variant="outline">
-                <Download className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </FadeInDown>
-
-        {/* Summary Cards */}
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6" delay={0.1}>
-          <StaggerItem>
-            <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10 h-full">
-                <p className="text-sm font-medium text-foreground/70 mb-2">Total Collected</p>
-                <p className="text-3xl font-bold text-green-600">₦{(totalCollected / 1000).toFixed(0)}K</p>
-                <p className="text-xs text-foreground/50 mt-2">This month</p>
-              </Card>
-            </motion.div>
-          </StaggerItem>
-          <StaggerItem>
-            <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 h-full">
-                <p className="text-sm font-medium text-foreground/70 mb-2">Avg Payment</p>
-                <p className="text-3xl font-bold text-blue-600">₦{(avgPayment / 1000).toFixed(0)}K</p>
-                <p className="text-xs text-foreground/50 mt-2">{payments.length} transactions</p>
-              </Card>
-            </motion.div>
-          </StaggerItem>
-          <StaggerItem>
-            <motion.div whileHover={{ scale: 1.02, y: -4 }} className="h-full">
-              <Card className="p-6 border border-border/50 bg-linear-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 h-full">
-                <p className="text-sm font-medium text-foreground/70 mb-2">Success Rate</p>
-                <p className="text-3xl font-bold text-purple-600">98%</p>
-                <p className="text-xs text-foreground/50 mt-2">All successful</p>
-              </Card>
-            </motion.div>
-          </StaggerItem>
-        </StaggerContainer>
-
-         {/* Payments Table */}
-        <FadeInUp delay={0.4}>
-          <Card className="border border-border/50 overflow-hidden">
-            <div className="p-6 border-b border-border/50 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Recent Payments</h3>
-                <p className="text-sm text-foreground/70 mt-1">Last 5 transactions</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filter
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/payments/1">View details</Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border/50 bg-muted/50">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Customer</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Amount</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Method</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Reference</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((payment, idx) => (
-                    <motion.tr
-                      key={payment.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 + idx * 0.05, duration: 0.3 }}
-                      whileHover={{ backgroundColor: 'rgba(124, 58, 237, 0.05)' }}
-                      className="border-b border-border/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-medium text-foreground">
-                        <Link href={`/payments/${payment.id}`} className="hover:text-purple-600 transition-colors">
-                          {payment.customer}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-green-600">{payment.amount}</td>
-                      <td className="px-6 py-4 text-sm text-foreground/70">{payment.date}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                          {payment.method}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-foreground/70 font-mono">{payment.reference}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-end gap-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-background border-border w-44">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/payments/${payment.id}`} className="flex items-center gap-2">
-                                  <Eye className="w-4 h-4" />
-                                  View details
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/payments/${payment.id}`} className="flex items-center gap-2">
-                                  <Edit2 className="w-4 h-4" />
-                                  Edit payment
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => openDeleteDialog(payment.id)}
-                                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20 flex items-center gap-2"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="px-6 py-4 border-t border-border/50 flex items-center justify-between">
-              <p className="text-sm text-foreground/70">Showing {payments.length} payments</p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
-              </div>
-            </div>
-          </Card>
-        </FadeInUp>
-
-        {/* Chart */}
-        <FadeInUp delay={0.3}>
-          <Card className="p-6 border border-border/50">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Weekly Collections</h3>
-              <p className="text-sm text-foreground/70 mt-1">Payment trends this month</p>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#f1f5f9',
-                  }}
-                />
-                <Bar dataKey="amount" fill="#7c3aed" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </FadeInUp>
-
-        {/* Dialogs */}
-        <RecordPaymentDialog open={recordPaymentOpen} onOpenChange={setRecordPaymentOpen} onRecord={handleRecordPayment} />
-        <DeleteConfirmationDialog
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          title="Delete Payment"
-          description="Are you sure you want to delete this payment record? This action cannot be undone."
-          onConfirm={handleDeleteConfirm}
-          isLoading={isDeleting}
-        />
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-7xl mx-auto space-y-6"
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-medium mb-1">
+            Payments
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em]">
+            Money coming in
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Every payment received across all customers.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-full text-xs h-9">
+            <Download className="w-3.5 h-3.5" />
+            Export
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setRecordPaymentOpen(true)}
+            className="rounded-full text-xs h-9 shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Record payment
+          </Button>
+        </div>
       </div>
+
+      {/* KPIs + weekly chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-1 space-y-4">
+          {kpis.map((k) => (
+            <div key={k.label} className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+                  {k.label}
+                </p>
+                <div className="text-[10px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-0.5 bg-success/10 text-success">
+                  <ArrowUp className="w-2.5 h-2.5" />
+                  {k.change}
+                </div>
+              </div>
+              <p className="text-2xl font-semibold tracking-tight">{k.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">{k.hint}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <div className="mb-6">
+            <p className="text-sm font-semibold">Weekly collections</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Amount received this month, in thousands
+            </p>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.912 0.058 293)" vertical={false} />
+              <XAxis dataKey="week" stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.502 0.032 257)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+                formatter={(v) => `₦${v}K`}
+              />
+              <Bar dataKey="amount" fill="oklch(0.588 0.233 293)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <input
+            placeholder="Search by customer…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-10 pl-9 pr-3 rounded-lg bg-background border border-border text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10"
+          />
+        </div>
+        <div className="flex items-center gap-1 p-1 rounded-lg border border-border bg-background overflow-x-auto">
+          {methodFilters.map((m) => (
+            <button
+              key={m}
+              onClick={() => setActiveMethod(m)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
+                activeMethod === m ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+        <Button variant="outline" size="sm" className="h-10 rounded-lg text-xs">
+          <Filter className="w-3.5 h-3.5" />
+          More
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Customer</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Amount</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Date</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Method</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Reference</th>
+                <th className="w-10" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p, i) => (
+                <motion.tr
+                  key={p.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.03 * i }}
+                  className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors group"
+                >
+                  <td className="px-6 py-3.5">
+                    <Link href={`/payments/${p.id}`} className="flex items-center gap-2.5 group/link">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                        {p.customer.split(' ').slice(0, 2).map((w) => w[0]).join('')}
+                      </div>
+                      <span className="text-sm font-medium group-hover/link:underline underline-offset-4">
+                        {p.customer}
+                      </span>
+                    </Link>
+                  </td>
+                  <td className="px-6 py-3.5 text-sm font-medium text-success">+{p.amount}</td>
+                  <td className="px-6 py-3.5 text-sm text-muted-foreground">{p.date}</td>
+                  <td className="px-6 py-3.5">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-muted text-foreground">
+                      {p.method}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3.5 text-xs text-muted-foreground font-mono">{p.reference}</td>
+                  <td className="px-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="w-7 h-7 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted/60 hover:text-foreground transition-all flex items-center justify-center">
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem asChild className="text-xs gap-2">
+                          <Link href={`/payments/${p.id}`}>
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="text-xs gap-2">
+                          <Link href={`/payments/${p.id}`}>
+                            <Edit2 className="w-3.5 h-3.5" /> Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => openDeleteDialog(p.id)}
+                          className="text-xs gap-2 text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <RecordPaymentDialog open={recordPaymentOpen} onOpenChange={setRecordPaymentOpen} onRecord={handleRecordPayment} />
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete payment"
+        description="Are you sure you want to delete this payment? This action cannot be undone."
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+      />
+    </motion.div>
   );
 }

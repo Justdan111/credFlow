@@ -1,11 +1,18 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { TrendingDown, DollarSign, CalendarDays } from 'lucide-react';
+import { Receipt, ArrowRight } from 'lucide-react';
 
 interface RecordDebtDialogProps {
   open: boolean;
@@ -20,8 +27,6 @@ export function RecordDebtDialog({ open, onOpenChange, onRecord }: RecordDebtDia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate API call
     setTimeout(() => {
       if (onRecord) onRecord(formData);
       setFormData({ customer: '', amount: '', dueDate: '' });
@@ -32,80 +37,85 @@ export function RecordDebtDialog({ open, onOpenChange, onRecord }: RecordDebtDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border max-w-md">
+      <DialogContent>
+        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+          <Receipt className="w-4 h-4" strokeWidth={2} />
+        </div>
         <DialogHeader>
-          <DialogTitle className="text-foreground flex items-center gap-2">
-            <TrendingDown className="w-5 h-5" />
-            Record New Debt
-          </DialogTitle>
-          <DialogDescription className="text-foreground/70">Enter debt details to track a new outstanding balance.</DialogDescription>
+          <DialogTitle>Record a debt</DialogTitle>
+          <DialogDescription>
+            Track what a customer owes and when they said they&apos;d pay.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="customer" className="text-sm font-medium">
-              Customer Name
-            </Label>
+          <Field label="Customer">
             <Input
-              id="customer"
               placeholder="Select or enter customer"
               value={formData.customer}
               onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
               required
-              className="bg-muted/50 border-border/50"
+              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium">
-              Debt Amount
-            </Label>
+          <Field label="Amount owed">
             <div className="relative">
-              <DollarSign className="absolute left-3 top-3 w-4 h-4 text-foreground/50" />
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                ₦
+              </span>
               <Input
-                id="amount"
                 type="number"
-                placeholder="250,000"
+                placeholder="0.00"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 required
-                className="pl-10 bg-muted/50 border-border/50"
+                className="pl-8 h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
               />
             </div>
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="dueDate" className="text-sm font-medium">
-              Due Date
-            </Label>
-            <div className="relative">
-              <CalendarDays className="absolute left-3 top-3 w-4 h-4 text-foreground/50" />
-              <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                required
-                className="pl-10 bg-muted/50 border-border/50"
-              />
-            </div>
-          </div>
+          <Field label="Due date">
+            <Input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+              required
+              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+            />
+          </Field>
 
-          <div className="flex gap-3 justify-end pt-4">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
-              className="bg-transparent border-border"
+              className="rounded-full h-9 text-xs"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-purple-600 hover:bg-purple-700">
-              {isLoading ? 'Recording...' : 'Record Debt'}
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isLoading}
+              className="rounded-full h-9 text-xs shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
+            >
+              {isLoading ? 'Recording…' : 'Record debt'}
+              {!isLoading && <ArrowRight className="w-3.5 h-3.5" />}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      {children}
+    </div>
   );
 }
