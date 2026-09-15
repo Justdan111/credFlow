@@ -23,14 +23,7 @@ import {
 import { AddCustomerDialog } from '@/components/dialogs/add-customer-dialog';
 import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
 
-const customers = [
-  { id: 1, name: 'ABC Stores Ltd', phone: '08012345678', email: 'info@abc.com', totalDebt: '₦250,000', riskLevel: 'Medium' },
-  { id: 2, name: 'XYZ Retail', phone: '08098765432', email: 'contact@xyz.com', totalDebt: '₦180,000', riskLevel: 'Low' },
-  { id: 3, name: 'Tech Solutions', phone: '09012345678', email: 'hello@techsol.com', totalDebt: '₦320,000', riskLevel: 'High' },
-  { id: 4, name: 'Fashion Hub', phone: '07098765432', email: 'shop@fashion.com', totalDebt: '₦150,000', riskLevel: 'Low' },
-  { id: 5, name: 'Food & Drinks Co', phone: '08187654321', email: 'sales@food.com', totalDebt: '₦420,000', riskLevel: 'Medium' },
-  { id: 6, name: 'Auto Parts Store', phone: '09187654321', email: 'admin@autoparts.com', totalDebt: '₦280,000', riskLevel: 'Low' },
-];
+import { useCustomers, useCreateCustomer, useDeleteCustomer } from '@/api/customers/customers.queries';
 
 const riskFilters = ['All', 'Low', 'Medium', 'High'];
 
@@ -39,38 +32,33 @@ export default function CustomersPage() {
   const [activeRisk, setActiveRisk] = useState('All');
   const [addCustomerOpen, setAddCustomerOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [, setSelectedCustomerId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const customersQuery = useCustomers({ search: searchTerm || undefined, riskLevel: activeRisk === 'All' ? undefined : activeRisk });
+  const createCustomerMutation = useCreateCustomer();
+  const deleteCustomerMutation = useDeleteCustomer();
+  const customers = customersQuery.data?.items ?? [];
 
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRisk = activeRisk === 'All' || customer.riskLevel === activeRisk;
-    return matchesSearch && matchesRisk;
-  });
+  const filteredCustomers = customers;
 
   const totals = {
-    all: customers.length,
+    all: customersQuery.data?.meta.total ?? customers.length,
     low: customers.filter((c) => c.riskLevel === 'Low').length,
     medium: customers.filter((c) => c.riskLevel === 'Medium').length,
     high: customers.filter((c) => c.riskLevel === 'High').length,
   };
 
   const handleDeleteConfirm = async () => {
-    setIsDeleting(true);
-    setTimeout(() => {
-      setIsDeleting(false);
-      setDeleteConfirmOpen(false);
-      setSelectedCustomerId(null);
-    }, 500);
+    if (!selectedCustomerId) return;
+    await deleteCustomerMutation.mutateAsync(selectedCustomerId);
+    setDeleteConfirmOpen(false);
+    setSelectedCustomerId(null);
   };
 
-  const handleAddCustomer = (customer: { name: string; email: string; phone: string }) => {
-    console.log('Adding customer:', customer);
+  const handleAddCustomer = async (customer: { name: string; email: string; phone: string }) => {
+    await createCustomerMutation.mutateAsync(customer);
   };
 
-  const openDeleteDialog = (customerId: number) => {
+  const openDeleteDialog = (customerId: string) => {
     setSelectedCustomerId(customerId);
     setDeleteConfirmOpen(true);
   };
@@ -82,6 +70,8 @@ export default function CustomersPage() {
       transition={{ duration: 0.4 }}
       className="max-w-7xl mx-auto space-y-6"
     >
+      {customersQuery.isLoading && <p className="text-sm text-muted-foreground">Loading customers…</p>}
+      {customersQuery.isError && <p role="alert" className="text-sm text-destructive">Unable to load customers.</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -186,10 +176,10 @@ export default function CustomersPage() {
                   <td className="px-6 py-3.5">
                     <div>
                       <p className="text-sm">{customer.phone}</p>
-                      <p className="text-xs text-muted-foreground">{customer.email}</p>
+                      <p className="text-xs text-muted-foreground">{customer.email ?? 'No email provided'}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-3.5 text-sm font-medium">{customer.totalDebt}</td>
+                  <td className="px-6 py-3.5 text-sm font-medium">{customer.creditLimit.toLocaleString()}</td>
                   <td className="px-6 py-3.5">
                     <RiskPill level={customer.riskLevel} />
                   </td>
@@ -247,7 +237,7 @@ export default function CustomersPage() {
         title="Delete customer"
         description="Are you sure you want to delete this customer? This action cannot be undone."
         onConfirm={handleDeleteConfirm}
-        isLoading={isDeleting}
+        isLoading={deleteCustomerMutation.isPending}
       />
     </motion.div>
   );

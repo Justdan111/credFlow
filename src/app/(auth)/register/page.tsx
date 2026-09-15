@@ -8,20 +8,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
+import { useRegister } from '@/api/auth/auth.queries';
+import { AxiosError } from 'axios';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const registerMutation = useRegister();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push('/onboarding');
-    }, 500);
+    await registerMutation.mutateAsync({
+      businessName,
+      industry: 'Other',
+      size: 'small',
+      email,
+      password,
+      name,
+    });
+    router.push('/onboarding');
   };
+
+  const errorMessage = registerMutation.error instanceof AxiosError
+    ? registerMutation.error.response?.data?.error?.message
+    : registerMutation.error?.message;
 
   const perks = [
     'Free forever plan · No credit card',
@@ -65,6 +79,8 @@ export default function RegisterPage() {
               id="businessName"
               placeholder="e.g. Bello Traders Ltd"
               required
+              value={businessName}
+              onChange={(event) => setBusinessName(event.target.value)}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
           </div>
@@ -80,6 +96,8 @@ export default function RegisterPage() {
               id="fullName"
               placeholder="Amina Bello"
               required
+              value={name}
+              onChange={(event) => setName(event.target.value)}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
           </div>
@@ -96,6 +114,8 @@ export default function RegisterPage() {
               type="email"
               placeholder="you@business.com"
               required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
           </div>
@@ -113,6 +133,8 @@ export default function RegisterPage() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="At least 8 characters"
                 required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border pr-10 focus-visible:border-primary/40 focus-visible:ring-primary/15"
               />
               <button
@@ -150,12 +172,17 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={registerMutation.isPending}
             className="w-full h-11 rounded-full mt-4 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
           >
-            {isLoading ? 'Creating account…' : 'Create account'}
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
+            {registerMutation.isPending ? 'Creating account…' : 'Create account'}
+            {!registerMutation.isPending && <ArrowRight className="w-4 h-4" />}
           </Button>
+          {errorMessage && (
+            <p role="alert" className="text-sm text-destructive text-center">
+              {errorMessage}
+            </p>
+          )}
         </form>
 
         {/* Perks */}

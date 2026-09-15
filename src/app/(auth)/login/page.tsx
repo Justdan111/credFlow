@@ -8,20 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
+import { useLogin } from '@/api/auth/auth.queries';
+import { AxiosError } from 'axios';
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const loginMutation = useLogin();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push('/dashboard');
-    }, 500);
+    await loginMutation.mutateAsync({ email, password });
+    router.push('/dashboard');
   };
+
+  const errorMessage = loginMutation.error instanceof AxiosError
+    ? loginMutation.error.response?.data?.error?.message
+    : loginMutation.error?.message;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32">
@@ -60,6 +65,8 @@ export default function LoginPage() {
               type="email"
               placeholder="you@example.com"
               required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
           </div>
@@ -85,6 +92,8 @@ export default function LoginPage() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border pr-10 focus-visible:border-primary/40 focus-visible:ring-primary/15"
               />
               <button
@@ -103,12 +112,17 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={loginMutation.isPending}
             className="w-full h-11 rounded-full mt-6 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
           >
-            {isLoading ? 'Signing in…' : 'Sign in'}
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
+            {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
+            {!loginMutation.isPending && <ArrowRight className="w-4 h-4" />}
           </Button>
+          {errorMessage && (
+            <p role="alert" className="text-sm text-destructive text-center">
+              {errorMessage}
+            </p>
+          )}
         </form>
 
         {/* Divider */}

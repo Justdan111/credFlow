@@ -17,7 +17,7 @@ import { UserPlus, ArrowRight } from 'lucide-react';
 interface AddCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd?: (customer: { name: string; email: string; phone: string }) => void;
+  onAdd?: (customer: { name: string; email: string; phone: string }) => Promise<void> | void;
 }
 
 export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDialogProps) {
@@ -27,12 +27,13 @@ export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDial
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      if (onAdd) onAdd(formData);
+    try {
+      await onAdd?.(formData);
       setFormData({ name: '', email: '', phone: '' });
-      setIsLoading(false);
       onOpenChange(false);
-    }, 500);
+    } catch {
+      // The parent owns and displays the mutation error.
+    }
   };
 
   return (
@@ -94,11 +95,12 @@ export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDial
             <Button
               type="submit"
               size="sm"
-              disabled={isLoading}
+                            disabled={!onAdd}
               className="rounded-full h-9 text-xs shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
             >
               {isLoading ? 'Adding…' : 'Add customer'}
-              {!isLoading && <ArrowRight className="w-3.5 h-3.5" />}
+              Add customer
+              <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </DialogFooter>
         </form>
