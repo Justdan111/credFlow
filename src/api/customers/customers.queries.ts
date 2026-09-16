@@ -20,8 +20,7 @@ export function useCustomers(params?: CustomerListParams, enabled = true) {
     queryKey: queryKeys.customers.list(params),
     queryFn: () => listCustomers(params),
     enabled,
-    // Keeps the previous page on screen while the next one loads, so the table
-    // does not collapse to a spinner on every page change.
+    // Keeps the previous page on screen while the next loads.
     placeholderData: (previous) => previous,
   });
 }
@@ -51,7 +50,6 @@ export function useUpdateCustomer(customerId: string) {
     mutationFn: (input: UpdateCustomerInput) => updateCustomer(customerId, input),
     onSuccess: (customer) => {
       queryClient.setQueryData(queryKeys.customers.detail(customerId), customer);
-      // Risk level and credit limit feed the analytics segments.
       invalidateFinancials(queryClient);
     },
   });

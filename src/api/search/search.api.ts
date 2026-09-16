@@ -29,15 +29,10 @@ const EMPTY_RESULTS: SearchResults = {
   payments: [],
 };
 
-/**
- * Searches customers, debts and payments in one request.
- *
- * `%` and `_` are escaped server-side, so a term containing them matches
- * literally instead of behaving as a wildcard.
- */
+/** `%` and `_` are escaped server-side, so they match literally. */
 export async function search(term: string, limit?: number): Promise<SearchResults> {
   const trimmed = term.trim();
-  // Short-circuits rather than sending a request the API will reject with 400.
+  // Short-circuits rather than sending a request the API answers with 400.
   if (trimmed.length < MIN_SEARCH_LENGTH) return { ...EMPTY_RESULTS, query: trimmed };
 
   const response = await apiClient.get<ApiEnvelope<SearchResults>>('/search', {

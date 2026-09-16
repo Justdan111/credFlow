@@ -18,16 +18,9 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   member: 'Can record customers, debts and payments, but not delete them.',
 };
 
-/** Ascending privilege, matching the backend's own ordering. */
 const ROLE_RANK: Record<string, number> = { member: 1, admin: 2, owner: 3 };
 
-/**
- * Whether `actorRole` may grant `targetRole`.
- *
- * The API refuses a grant above the caller's own rank with a 403. Mirroring the
- * rule here means the UI offers only the roles that will actually be accepted,
- * rather than presenting a choice and then reporting a permission error.
- */
+/** Mirrors the API's rule so the UI offers only roles that will be accepted. */
 export function canGrantRole(actorRole: string | undefined, targetRole: string): boolean {
   return (ROLE_RANK[actorRole ?? ''] ?? 0) >= (ROLE_RANK[targetRole] ?? 0);
 }
@@ -44,11 +37,7 @@ export interface Member {
   phone: string;
   role: UserRole | string;
   invitedBy: string | null;
-  /**
-   * Null for somebody who has never signed in — which is how an outstanding
-   * invitation is told apart from an active teammate, with no separate
-   * invitations resource to keep in sync.
-   */
+  /** Null until they first sign in, which is how a pending invite is detected. */
   lastActiveAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -69,7 +58,6 @@ export interface UpdateMemberInput {
   role?: UserRole;
 }
 
-/** An invitation is outstanding until the invitee redeems their emailed link. */
 export function isInvitationPending(member: Member): boolean {
   return member.lastActiveAt === null;
 }
@@ -85,13 +73,8 @@ export async function getMember(userId: string): Promise<Member> {
   return unwrap(await apiClient.get<ApiEnvelope<Member>>(`/users/${userId}`));
 }
 
-/**
- * Invites a teammate. Requires the owner or admin role.
- *
- * The response carries the created member but never the invitation link: that
- * link is a credential for taking over the account, so it goes to the invitee's
- * inbox and nowhere else. Re-inviting issues a fresh link and burns the old one.
- */
+/** Owner/admin. The invitation link is never returned — it goes only to the
+ *  invitee's inbox. Re-inviting issues a fresh link and burns the old one. */
 export async function inviteMember(input: InviteMemberInput): Promise<Member> {
   const result = unwrap(
     await apiClient.post<ApiEnvelope<{ member: Member }>>('/users', input),
@@ -104,11 +87,7 @@ export async function updateMember(userId: string, input: UpdateMemberInput): Pr
   return unwrap(await apiClient.patch<ApiEnvelope<Member>>(`/users/${userId}`, input));
 }
 
-/**
- * Removes a teammate and ends their sessions. Owner only.
- *
- * The API refuses to remove the last owner (409) or the caller themselves (403).
- */
+/** Owner only. Refused for the last owner (409) or the caller themselves (403). */
 export async function removeMember(userId: string): Promise<void> {
   await apiClient.delete(`/users/${userId}`);
 }

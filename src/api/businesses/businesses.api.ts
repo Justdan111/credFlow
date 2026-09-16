@@ -27,10 +27,7 @@ export interface Business {
   size: string | null;
   currency: string;
   monthlyCollectionTarget: number | null;
-  /**
-   * True once debts or payments exist: the currency can no longer change,
-   * because switching it would silently reinterpret every stored amount.
-   */
+  /** True once debts or payments exist — changing currency would reinterpret them. */
   currencyLocked: boolean;
   onboardingCompleted: boolean;
   onboardingCompletedAt: string | null;

@@ -111,8 +111,7 @@ export default function SettingsPage() {
 function ProfilePanel() {
   const { user, business } = useSession();
 
-  // The form is mounted only once the user has arrived, so its initial state
-  // is the real record rather than blanks patched up afterwards.
+  // Mounted only once the user has arrived, so its initial state is the record.
   if (!user) return <LoadingState label="Loading your profile…" />;
 
   return (
@@ -135,8 +134,7 @@ function ProfilePanel() {
 
 function ProfileForm({ user }: { user: SessionUser }) {
   const updateProfile = useUpdateProfile();
-  // `GET /auth/me` does not return the phone number; the only place it appears
-  // is the response to an update, which is cached under its own key.
+  // `GET /auth/me` omits the phone; only an update's response carries it.
   const updatedProfile = useUpdatedProfile();
 
   const [values, setValues] = useState(() => ({
@@ -155,15 +153,13 @@ function ProfileForm({ user }: { user: SessionUser }) {
     if (!result.success) return;
 
     try {
-      // `phone` is omitted while blank. The field cannot show a stored number,
-      // so sending an empty string would silently clear one the user never saw.
+      // Omitted while blank: an empty string would clear a number never shown.
       await updateProfile.mutateAsync({
         name: result.data.name,
         ...(result.data.phone ? { phone: result.data.phone } : {}),
       });
       setSavedMessage('Profile updated.');
     } catch {
-      // Rendered below from the mutation's error state.
     }
   };
 
@@ -222,8 +218,7 @@ function ProfileForm({ user }: { user: SessionUser }) {
 
 function BusinessPanel() {
   const { canAdminister } = useSession();
-  // The session carries a trimmed business view; the settings form needs the
-  // full profile, including the collection target and the currency lock.
+  // The session carries a trimmed business; this form needs the full profile.
   const businessQuery = useCurrentBusiness();
 
   if (businessQuery.isPending) return <LoadingState label="Loading your business…" />;
@@ -264,9 +259,8 @@ function BusinessForm({
     event.preventDefault();
     setSavedMessage(null);
 
-    // A blank target field means "no target", which the API expresses as an
-    // explicit null rather than an omitted key. NaN keeps a non-numeric entry
-    // in the validation path instead of silently clearing the target.
+    // Blank means "no target", which the API expresses as an explicit null.
+    // NaN keeps a non-numeric entry in the validation path.
     const target =
       values.monthlyCollectionTarget.trim() === ''
         ? null
@@ -283,7 +277,6 @@ function BusinessForm({
       await updateBusiness.mutateAsync(result.data);
       setSavedMessage('Business profile updated.');
     } catch {
-      // Rendered below — a currency change after the lock comes back as a 409.
     }
   };
 

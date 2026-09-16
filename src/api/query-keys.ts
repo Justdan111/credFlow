@@ -5,21 +5,12 @@ import type { NoteListParams } from '@/api/notes/notes.api';
 import type { PaymentListParams } from '@/api/payments/payments.api';
 import type { MemberListParams } from '@/api/users/users.api';
 
-/**
- * Every cache key in one place.
- *
- * Money moves across features — recording a payment changes a debt, a
- * customer's balance, the dashboard tiles and the analytics series — so
- * invalidation is cross-cutting by nature. Keeping the keys together lets
- * `invalidateFinancials` below stay correct as features are added, instead of
- * each mutation guessing which other modules it should touch.
- */
+/** Every cache key in one place, so cross-feature invalidation stays correct. */
 export const queryKeys = {
   auth: {
     all: ['auth'] as const,
-    /** `GET /auth/me` — the signed-in user plus their business. */
     session: () => [...queryKeys.auth.all, 'session'] as const,
-    /** The flat profile echoed back by `PATCH /auth/me`; carries `phone`. */
+    /** Only `PATCH /auth/me` returns this shape; it is the only source of `phone`. */
     profile: () => [...queryKeys.auth.all, 'profile'] as const,
     sessions: () => [...queryKeys.auth.all, 'sessions'] as const,
   },
@@ -90,16 +81,10 @@ export const queryKeys = {
   },
 } as const;
 
-/**
- * Aggregates that are derived from customers, debts and payments. Any write to
- * one of those invalidates these too, otherwise the dashboard keeps showing a
- * total that no longer matches the rows below it.
- */
+/** Aggregates derived from customers, debts and payments. */
 export const derivedQueryKeys = [
   queryKeys.dashboard.all,
   queryKeys.analytics.all,
-  // The audit trail gains an entry on every destructive or financial write, and
-  // search reads the same rows a write just changed.
   queryKeys.audit.all,
   queryKeys.search.all,
 ] as const;

@@ -9,12 +9,10 @@ export const PASSWORD_MAX_LENGTH = 72;
 export const USER_ROLES = ['owner', 'admin', 'member'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
-/** Roles allowed to edit the business profile and delete customers/debts. */
 export function canAdminister(role: string | undefined): boolean {
   return role === 'owner' || role === 'admin';
 }
 
-/** Only an owner may void a payment. */
 export function isOwner(role: string | undefined): boolean {
   return role === 'owner';
 }
@@ -47,13 +45,8 @@ export interface AuthResponse {
   accessToken: string;
 }
 
-/**
- * `PATCH /auth/me` answers with this flat profile, which carries `phone`.
- *
- * `GET /auth/me` deliberately answers with `{ user, business }` instead, so
- * `phone` is only ever seen in the response to an update. `UpdateProfileInput`
- * below documents what that means for the settings form.
- */
+/** The `PATCH /auth/me` response. `GET /auth/me` returns `CurrentSession`, so
+ *  `phone` is only ever visible in the reply to an update. */
 export interface Profile {
   id: string;
   email: string;
@@ -64,11 +57,7 @@ export interface Profile {
   updatedAt: string;
 }
 
-/**
- * `GET /auth/me` — the signed-in user together with their business, which is
- * everything the shell needs (identity, role, currency, onboarding state) in
- * one request.
- */
+/** `GET /auth/me` — identity, role, currency and onboarding state in one request. */
 export interface CurrentSession {
   user: User;
   business: AuthBusiness;
@@ -96,12 +85,8 @@ export interface LoginInput {
   password: string;
 }
 
-/**
- * An omitted key is left unchanged by the API. That matters for `phone`:
- * `GET /auth/me` does not return it, so a form that cannot show the current
- * value must omit the key rather than send an empty string, which would wipe a
- * stored number the user never saw.
- */
+/** An omitted key is left unchanged. Omit `phone` rather than sending `''`:
+ *  the form cannot show the stored value, so an empty string would wipe it. */
 export interface UpdateProfileInput {
   name?: string;
   phone?: string;
@@ -133,7 +118,6 @@ export async function logout(): Promise<void> {
   try {
     await apiClient.post('/auth/logout');
   } finally {
-    // Whatever the server said, this browser is done with the session.
     setAccessToken(null);
   }
 }
@@ -158,11 +142,8 @@ export async function revokeSession(sessionId: string): Promise<void> {
   await apiClient.delete(`/auth/sessions/${sessionId}`);
 }
 
-/**
- * Always resolves for a well-formed address, whether or not the account
- * exists — the backend answers 202 either way to avoid leaking which emails
- * are registered, and the UI must not undo that by branching on the result.
- */
+/** Resolves whether or not the account exists — the API answers 202 either way,
+ *  and branching on the result would leak which addresses are registered. */
 export async function requestPasswordReset(email: string): Promise<void> {
   await apiClient.post('/auth/forgot-password', { email });
 }

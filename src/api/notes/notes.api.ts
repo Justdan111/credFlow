@@ -54,10 +54,7 @@ export async function createCustomerNote(
   );
 }
 
-/**
- * Retracts a note. Requires the owner or admin role — a note is somebody's
- * record of a conversation, so removing it is administrative.
- */
+/** Owner/admin only. */
 export async function deleteNote(noteId: string): Promise<void> {
   await apiClient.delete(`/notes/${noteId}`);
 }

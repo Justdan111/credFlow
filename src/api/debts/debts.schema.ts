@@ -13,10 +13,7 @@ const baseDebt = z.object({
   dueDate: isoDate,
 });
 
-/**
- * Mirrors the backend's own check so the user is told before the round-trip
- * rather than after: a debt cannot come due before it was issued.
- */
+/** A debt cannot come due before it was issued; checked here to skip a round-trip. */
 const dueAfterIssued = (values: { issuedDate: string; dueDate: string }) =>
   !values.issuedDate || values.dueDate >= values.issuedDate;
 

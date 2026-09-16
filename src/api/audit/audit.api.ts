@@ -1,14 +1,7 @@
 import { apiClient, cleanParams, unwrapPage } from '@/api/client';
 import type { ApiEnvelope, PageParams, Paginated } from '@/api/types';
 
-/**
- * Actions the API records. Dotted `<entity>.<verb>`, matching the constants in
- * the Go `audit` package.
- *
- * Only destructive and financial actions are recorded — reads never are, so the
- * trail stays a record of what changed rather than of when colleagues were at
- * their desks.
- */
+/** Destructive and financial actions only; reads are never recorded. */
 export const AUDIT_ACTIONS = [
   'customer.deleted',
   'debt.updated',

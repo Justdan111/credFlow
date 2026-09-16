@@ -37,7 +37,6 @@ export function useUpdateBusiness() {
     mutationFn: (input: UpdateBusinessInput) => updateCurrentBusiness(input),
     onSuccess: (business) => {
       queryClient.setQueryData(queryKeys.businesses.current(), business);
-      // The currency and collection target feed every reported figure.
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
     },

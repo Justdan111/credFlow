@@ -8,20 +8,13 @@ import { FullPageLoader } from '@/components/feedback/states';
 
 interface RequireAuthProps {
   children: React.ReactNode;
-  /**
-   * Sends users who have not finished onboarding to `/onboarding`. The
-   * onboarding screen itself opts out, or it would redirect to itself.
-   */
+  /** The onboarding screen opts out, or it would redirect to itself. */
   requireOnboarding?: boolean;
 }
 
 /**
- * Client-side gate for authenticated screens.
- *
- * This is a navigation convenience, not the security boundary: every protected
- * route is enforced by the API, which checks the bearer token and the caller's
- * role on each request. Hiding a page a user cannot use is a courtesy; the
- * server is what actually says no.
+ * A navigation convenience, not the security boundary — the API checks the
+ * token and role on every request regardless.
  */
 export function RequireAuth({ children, requireOnboarding = true }: RequireAuthProps) {
   const router = useRouter();
@@ -33,7 +26,6 @@ export function RequireAuth({ children, requireOnboarding = true }: RequireAuthP
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      // `next` brings the user back to where they were headed after signing in.
       const next = encodeURIComponent(pathname);
       router.replace(`/login?next=${next}`);
     }

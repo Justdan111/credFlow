@@ -20,12 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { formatDateTime, initials } from '@/lib/format';
 import { validateForm, type FieldErrors } from '@/lib/form';
 
-/**
- * The follow-up history for one customer.
- *
- * Collections is a conversation — who was called, what they promised, when to
- * chase again — and until this existed that context lived in one person's head.
- */
+/** Follow-up history for one customer: calls, visits and messages. */
 export function CustomerNotes({ customerId, customerName }: { customerId: string; customerName: string }) {
   const { canAdminister } = useSession();
 
@@ -51,7 +46,6 @@ export function CustomerNotes({ customerId, customerName }: { customerId: string
       setValues({ body: '', channel: values.channel });
       setFieldErrors({});
     } catch {
-      // Rendered below from the mutation's error state.
     }
   };
 
@@ -61,7 +55,6 @@ export function CustomerNotes({ customerId, customerName }: { customerId: string
       await deleteNote.mutateAsync(pendingDeleteId);
       setPendingDeleteId(null);
     } catch {
-      // Shown inside the dialog.
     }
   };
 

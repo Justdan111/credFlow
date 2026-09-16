@@ -1,9 +1,4 @@
-/**
- * Shared shapes for the CredFlow REST contract.
- *
- * Every JSON endpoint answers with the same envelope, so unwrapping lives in
- * one place (`src/api/client.ts`) instead of being repeated per request.
- */
+/** Every endpoint answers with the same envelope; unwrapping lives in client.ts. */
 
 export interface ApiMeta {
   page: number;
@@ -22,13 +17,11 @@ export interface ApiEnvelope<T> {
   error: ApiErrorBody | null;
 }
 
-/** A list response paired with the pagination metadata the server reported. */
 export interface Paginated<T> {
   items: T[];
   meta: ApiMeta;
 }
 
-/** Query parameters every list endpoint accepts. */
 export interface PageParams {
   page?: number;
   pageSize?: number;

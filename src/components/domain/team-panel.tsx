@@ -25,12 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { formatRelative, initials } from '@/lib/format';
 
-/**
- * Team management.
- *
- * Roles existed from the first migration but there was no way to create a
- * second user, so this is the screen that makes them mean anything.
- */
+/** Team management: invite, change role, remove. */
 export function TeamPanel() {
   const { user, role, canAdminister, isOwner } = useSession();
 
@@ -50,7 +45,6 @@ export function TeamPanel() {
       await removeMember.mutateAsync(pendingRemoval.id);
       setPendingRemoval(null);
     } catch {
-      // Shown inside the dialog from the mutation's error state.
     }
   };
 
@@ -96,8 +90,7 @@ export function TeamPanel() {
                 actorRole={role}
                 canAdminister={canAdminister}
                 canRemove={isOwner}
-                // The API refuses to demote or remove the final owner; hiding
-                // those controls says so before the request is sent.
+                // The API refuses to demote or remove the final owner.
                 isLastOwner={member.role === 'owner' && owners.length <= 1}
                 onRequestRemoval={() => setPendingRemoval(member)}
               />
@@ -158,8 +151,7 @@ function MemberRow({
 }) {
   const updateMember = useUpdateMember(member.id);
 
-  // You may only change somebody whose role you could also grant, which is the
-  // same rule the API enforces.
+  // Same rule the API enforces: you may only change a role you could grant.
   const mayEditRole = canAdminister && !isLastOwner && grantableRoles(actorRole).includes(member.role as UserRole);
   const mayRemove = canRemove && !isSelf && !isLastOwner;
 

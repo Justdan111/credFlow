@@ -82,7 +82,6 @@ export default function CustomerDetailPage() {
       await deleteCustomer.mutateAsync(customerId);
       router.replace('/customers');
     } catch {
-      // Shown inside the dialog.
     }
   };
 

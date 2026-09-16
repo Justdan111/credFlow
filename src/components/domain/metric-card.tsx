@@ -9,11 +9,7 @@ interface MetricCardProps {
   value: string;
   hint?: string;
   metric?: Metric;
-  /**
-   * True when a *fall* is the good outcome — overdue debt, for instance. It
-   * decides the colour of the change badge; without it a shrinking overdue
-   * balance would be painted red.
-   */
+  /** True when a fall is good — overdue debt — so the badge is not painted red. */
   lowerIsBetter?: boolean;
   className?: string;
 }

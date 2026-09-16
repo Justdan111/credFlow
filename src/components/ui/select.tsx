@@ -2,12 +2,8 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-/**
- * A native `<select>` styled to match `Input`.
- *
- * Native beats a custom listbox here: it is keyboard- and screen-reader
- * correct for free, and on mobile it opens the platform picker.
- */
+/** A native `<select>` styled to match `Input`: keyboard- and screen-reader
+ *  correct for free, and it opens the platform picker on mobile. */
 function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
   return (
     <select
