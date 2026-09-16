@@ -2,46 +2,67 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ArrowRight, Check, Eye, EyeOff } from 'lucide-react';
+
+import { PASSWORD_MIN_LENGTH } from '@/api/auth/auth.api';
 import { useRegister } from '@/api/auth/auth.queries';
-import { AxiosError } from 'axios';
+import { registerSchema, type RegisterValues } from '@/api/auth/auth.schema';
+import { GuestOnly } from '@/components/auth/guest-only';
+import { InlineError } from '@/components/feedback/states';
+import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
+import { Input } from '@/components/ui/input';
+import { validateForm, type FieldErrors } from '@/lib/form';
+
+const PERKS = [
+  'Free forever plan · No credit card',
+  '14-day Growth trial included',
+  'Cancel anytime',
+];
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [businessName, setBusinessName] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const registerMutation = useRegister();
+  return (
+    <GuestOnly>
+      <RegisterForm />
+    </GuestOnly>
+  );
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await registerMutation.mutateAsync({
-      businessName,
-      industry: 'Other',
-      size: 'small',
-      email,
-      password,
-      name,
-    });
-    router.push('/onboarding');
+function RegisterForm() {
+  const router = useRouter();
+  const register = useRegister();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [values, setValues] = useState({
+    businessName: '',
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<RegisterValues>>({});
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const result = validateForm(registerSchema, values);
+    setFieldErrors(result.errors ?? {});
+    if (!result.success) return;
+
+    try {
+      // Industry and size are collected during onboarding, where they are
+      // shown with the currency they affect. Sending them empty here leaves
+      // the business profile step legitimately incomplete.
+      await register.mutateAsync({ ...result.data, industry: '', size: '' });
+      router.replace('/onboarding');
+    } catch {
+      // Rendered below from the mutation's error state.
+    }
   };
 
-  const errorMessage = registerMutation.error instanceof AxiosError
-    ? registerMutation.error.response?.data?.error?.message
-    : registerMutation.error?.message;
-
-  const perks = [
-    'Free forever plan · No credit card',
-    '14-day Growth trial included',
-    'Cancel anytime',
-  ];
+  const update = (field: keyof RegisterValues) => (event: React.ChangeEvent<HTMLInputElement>) =>
+    setValues((previous) => ({ ...previous, [field]: event.target.value }));
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32">
@@ -51,7 +72,6 @@ export default function RegisterPage() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm"
       >
-        {/* Eyebrow */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-full mb-6">
             <span className="text-xs font-medium text-primary tracking-wide">
@@ -66,94 +86,69 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="businessName"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Business name
-            </Label>
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <FormField label="Business name" htmlFor="businessName" error={fieldErrors.businessName}>
             <Input
-              id="businessName"
               placeholder="e.g. Bello Traders Ltd"
-              required
-              value={businessName}
-              onChange={(event) => setBusinessName(event.target.value)}
+              autoComplete="organization"
+              value={values.businessName}
+              onChange={update('businessName')}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="fullName"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Your name
-            </Label>
+          <FormField label="Your name" htmlFor="name" error={fieldErrors.name}>
             <Input
-              id="fullName"
               placeholder="Amina Bello"
-              required
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+              autoComplete="name"
+              value={values.name}
+              onChange={update('name')}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="email"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Work email
-            </Label>
+          <FormField label="Work email" htmlFor="email" error={fieldErrors.email}>
             <Input
-              id="email"
               type="email"
+              autoComplete="email"
               placeholder="you@business.com"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              value={values.email}
+              onChange={update('email')}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
-          </div>
+          </FormField>
 
           <div className="space-y-1.5">
-            <Label
-              htmlFor="password"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Password
-            </Label>
+            <span className="text-xs font-medium text-muted-foreground">Password</span>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="At least 8 characters"
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+                value={values.password}
+                onChange={update('password')}
+                aria-invalid={fieldErrors.password ? true : undefined}
                 className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border pr-10 focus-visible:border-primary/40 focus-visible:ring-primary/15"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword((shown) => !shown)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {fieldErrors.password && (
+              <p role="alert" className="text-xs text-destructive">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <label className="flex items-start gap-2 pt-1 cursor-pointer">
             <input
-              id="terms"
               type="checkbox"
               required
               className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-2 focus:ring-primary/30 mt-0.5 accent-primary"
@@ -172,32 +167,31 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            disabled={registerMutation.isPending}
+            disabled={register.isPending}
             className="w-full h-11 rounded-full mt-4 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
           >
-            {registerMutation.isPending ? 'Creating account…' : 'Create account'}
-            {!registerMutation.isPending && <ArrowRight className="w-4 h-4" />}
+            {register.isPending ? 'Creating account…' : 'Create account'}
+            {!register.isPending && <ArrowRight className="w-4 h-4" />}
           </Button>
-          {errorMessage && (
-            <p role="alert" className="text-sm text-destructive text-center">
-              {errorMessage}
-            </p>
-          )}
+
+          <InlineError
+            error={register.error}
+            fallback="We could not create your account. Please try again."
+            className="text-center"
+          />
         </form>
 
-        {/* Perks */}
         <ul className="mt-6 space-y-1.5">
-          {perks.map((p) => (
-            <li key={p} className="flex items-center gap-2 text-xs text-muted-foreground">
+          {PERKS.map((perk) => (
+            <li key={perk} className="flex items-center gap-2 text-xs text-muted-foreground">
               <div className="w-3.5 h-3.5 rounded-full bg-primary/10 flex items-center justify-center">
                 <Check className="w-2 h-2 text-primary" strokeWidth={3} />
               </div>
-              {p}
+              {perk}
             </li>
           ))}
         </ul>
 
-        {/* Login link */}
         <p className="text-center text-xs text-muted-foreground mt-8">
           Already have an account?{' '}
           <Link

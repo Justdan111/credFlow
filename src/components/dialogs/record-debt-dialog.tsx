@@ -1,5 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import { ArrowRight, Receipt } from 'lucide-react';
+
+import type { CreateDebtInput } from '@/api/debts/debts.api';
+import { debtSchema, type DebtValues } from '@/api/debts/debts.schema';
+import { CustomerSelect } from '@/components/domain/entity-selects';
+import { InlineError } from '@/components/feedback/states';
+import { useSession } from '@/components/providers/session-provider';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,31 +17,71 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { Receipt, ArrowRight } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { optionalText, parseAmount, validateForm, type FieldErrors } from '@/lib/form';
+import { todayAsDateInput } from '@/lib/format';
 
 interface RecordDebtDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRecord?: (debt: { customer: string; amount: string; dueDate: string }) => void;
+  onSubmit: (input: CreateDebtInput) => Promise<unknown>;
+  isSubmitting: boolean;
+  error?: unknown;
+  /** Pre-selects the customer when opened from their own page. */
+  customerId?: string;
 }
 
-export function RecordDebtDialog({ open, onOpenChange, onRecord }: RecordDebtDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ customer: '', amount: '', dueDate: '' });
+export function RecordDebtDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  isSubmitting,
+  error,
+  customerId,
+}: RecordDebtDialogProps) {
+  const { currency } = useSession();
+  const [values, setValues] = useState({
+    customerId: customerId ?? '',
+    amount: '',
+    description: '',
+    issuedDate: todayAsDateInput(),
+    dueDate: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<DebtValues>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      if (onRecord) onRecord(formData);
-      setFormData({ customer: '', amount: '', dueDate: '' });
-      setIsLoading(false);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const result = validateForm(debtSchema, {
+      ...values,
+      customerId: customerId ?? values.customerId,
+      amount: parseAmount(values.amount),
+    });
+    setFieldErrors(result.errors ?? {});
+    if (!result.success) return;
+
+    try {
+      await onSubmit({
+        customerId: result.data.customerId,
+        amount: result.data.amount,
+        description: optionalText(result.data.description),
+        issuedDate: optionalText(result.data.issuedDate),
+        dueDate: result.data.dueDate,
+      });
+      setValues({
+        customerId: customerId ?? '',
+        amount: '',
+        description: '',
+        issuedDate: todayAsDateInput(),
+        dueDate: '',
+      });
+      setFieldErrors({});
       onOpenChange(false);
-    }, 500);
+    } catch {
+      // The parent owns the mutation error and it is rendered below.
+    }
   };
 
   return (
@@ -48,42 +97,69 @@ export function RecordDebtDialog({ open, onOpenChange, onRecord }: RecordDebtDia
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Customer">
-            <Input
-              placeholder="Select or enter customer"
-              value={formData.customer}
-              onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
-              required
-              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          {!customerId && (
+            <CustomerSelect
+              value={values.customerId}
+              onChange={(id) => setValues((previous) => ({ ...previous, customerId: id }))}
+              error={fieldErrors.customerId}
             />
-          </Field>
+          )}
 
-          <Field label="Amount owed">
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
-                ₦
-              </span>
+          <FormField
+            label={`Amount owed (${currency})`}
+            htmlFor="debt-amount"
+            error={fieldErrors.amount}
+          >
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={values.amount}
+              onChange={(event) => setValues({ ...values, amount: event.target.value })}
+              className="h-11 rounded-lg bg-background/80 border-border"
+            />
+          </FormField>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Issued" htmlFor="debt-issued" error={fieldErrors.issuedDate}>
               <Input
-                type="number"
-                placeholder="0.00"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                required
-                className="pl-8 h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+                type="date"
+                value={values.issuedDate}
+                onChange={(event) => setValues({ ...values, issuedDate: event.target.value })}
+                className="h-11 rounded-lg bg-background/80 border-border"
               />
-            </div>
-          </Field>
+            </FormField>
 
-          <Field label="Due date">
-            <Input
-              type="date"
-              value={formData.dueDate}
-              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              required
-              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+            <FormField label="Due" htmlFor="debt-due" error={fieldErrors.dueDate}>
+              <Input
+                type="date"
+                // The API rejects a due date before the issue date; the input
+                // stops it being picked in the first place.
+                min={values.issuedDate || undefined}
+                value={values.dueDate}
+                onChange={(event) => setValues({ ...values, dueDate: event.target.value })}
+                className="h-11 rounded-lg bg-background/80 border-border"
+              />
+            </FormField>
+          </div>
+
+          <FormField
+            label="Description"
+            htmlFor="debt-description"
+            error={fieldErrors.description}
+            hint="Optional"
+          >
+            <Textarea
+              placeholder="What was supplied, invoice number, agreed terms…"
+              value={values.description}
+              onChange={(event) => setValues({ ...values, description: event.target.value })}
+              className="rounded-lg bg-background/80 border-border"
             />
-          </Field>
+          </FormField>
+
+          <InlineError error={error} fallback="We could not record that debt." className="text-xs" />
 
           <DialogFooter>
             <Button
@@ -98,24 +174,15 @@ export function RecordDebtDialog({ open, onOpenChange, onRecord }: RecordDebtDia
             <Button
               type="submit"
               size="sm"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="rounded-full h-9 text-xs shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
             >
-              {isLoading ? 'Recording…' : 'Record debt'}
-              {!isLoading && <ArrowRight className="w-3.5 h-3.5" />}
+              {isSubmitting ? 'Recording…' : 'Record debt'}
+              {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      {children}
-    </div>
   );
 }

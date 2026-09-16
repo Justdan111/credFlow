@@ -1,57 +1,78 @@
-import { apiClient, unwrap } from '@/api/client';
-import type { ApiResponse, Paginated } from '@/api/types';
+import { apiClient, cleanParams, unwrap, unwrapPage } from '@/api/client';
+import type { ApiEnvelope, PageParams, Paginated } from '@/api/types';
+
+export const RISK_LEVELS = ['low', 'medium', 'high'] as const;
+export type RiskLevel = (typeof RISK_LEVELS)[number];
+
+/** Sort keys the backend accepts; a `-` prefix reverses the direction. */
+export const CUSTOMER_SORT_FIELDS = [
+  'createdAt',
+  'updatedAt',
+  'name',
+  'riskLevel',
+  'creditLimit',
+] as const;
+export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
+export type CustomerSort = CustomerSortField | `-${CustomerSortField}`;
 
 export interface Customer {
   id: string;
   businessId: string;
   name: string;
-  email?: string;
-  phone?: string;
-  companyName?: string;
-  address?: string;
-  riskLevel: string;
+  email?: string | null;
+  phone?: string | null;
+  companyName?: string | null;
+  address?: string | null;
+  riskLevel: RiskLevel | string;
   creditLimit: number;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CustomerListParams {
-  page?: number;
-  pageSize?: number;
+export interface CustomerListParams extends PageParams {
   search?: string;
-  riskLevel?: string;
-  sort?: string;
+  riskLevel?: RiskLevel;
+  sort?: CustomerSort;
 }
 
-export interface CustomerInput {
+export interface CreateCustomerInput {
   name: string;
   email?: string;
   phone?: string;
   companyName?: string;
   address?: string;
-  riskLevel?: string;
+  riskLevel?: RiskLevel;
   creditLimit?: number;
   notes?: string;
 }
 
-export async function listCustomers(params?: CustomerListParams) {
-  const response = await apiClient.get<ApiResponse<Customer[]>>('/customers', { params });
-  return { items: unwrap(response), meta: response.data.meta } as Paginated<Customer>;
+/** Every key is optional: an omitted field is left untouched by the API. */
+export type UpdateCustomerInput = Partial<CreateCustomerInput>;
+
+export async function listCustomers(params?: CustomerListParams): Promise<Paginated<Customer>> {
+  const response = await apiClient.get<ApiEnvelope<Customer[]>>('/customers', {
+    params: cleanParams(params),
+  });
+  return unwrapPage(response, params);
 }
 
-export async function getCustomer(id: string) {
-  return unwrap(await apiClient.get<ApiResponse<Customer>>(`/customers/${id}`));
+export async function getCustomer(customerId: string): Promise<Customer> {
+  return unwrap(await apiClient.get<ApiEnvelope<Customer>>(`/customers/${customerId}`));
 }
 
-export async function createCustomer(input: CustomerInput) {
-  return unwrap(await apiClient.post<ApiResponse<Customer>>('/customers', input));
+export async function createCustomer(input: CreateCustomerInput): Promise<Customer> {
+  return unwrap(await apiClient.post<ApiEnvelope<Customer>>('/customers', input));
 }
 
-export async function updateCustomer(id: string, input: Partial<CustomerInput>) {
-  return unwrap(await apiClient.patch<ApiResponse<Customer>>(`/customers/${id}`, input));
+export async function updateCustomer(
+  customerId: string,
+  input: UpdateCustomerInput,
+): Promise<Customer> {
+  return unwrap(await apiClient.patch<ApiEnvelope<Customer>>(`/customers/${customerId}`, input));
 }
 
-export async function deleteCustomer(id: string) {
-  await apiClient.delete(`/customers/${id}`);
+/** Soft-deletes the customer server-side; requires the owner or admin role. */
+export async function deleteCustomer(customerId: string): Promise<void> {
+  await apiClient.delete(`/customers/${customerId}`);
 }

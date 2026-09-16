@@ -1,42 +1,70 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import {
   createCustomer,
   deleteCustomer,
   getCustomer,
   listCustomers,
   updateCustomer,
-  type CustomerInput,
+  type CreateCustomerInput,
   type CustomerListParams,
+  type UpdateCustomerInput,
 } from '@/api/customers/customers.api';
+import { invalidateFinancials } from '@/api/invalidate';
+import { queryKeys } from '@/api/query-keys';
 
-export const customerKeys = {
-  all: ['customers'] as const,
-  lists: () => [...customerKeys.all, 'list'] as const,
-  list: (params?: CustomerListParams) => [...customerKeys.lists(), params] as const,
-  detail: (id: string) => [...customerKeys.all, 'detail', id] as const,
-};
-
-export function useCustomers(params?: CustomerListParams) {
-  return useQuery({ queryKey: customerKeys.list(params), queryFn: () => listCustomers(params) });
+export function useCustomers(params?: CustomerListParams, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.customers.list(params),
+    queryFn: () => listCustomers(params),
+    enabled,
+    // Keeps the previous page on screen while the next one loads, so the table
+    // does not collapse to a spinner on every page change.
+    placeholderData: (previous) => previous,
+  });
 }
 
-export function useCustomer(id: string) {
-  return useQuery({ queryKey: customerKeys.detail(id), queryFn: () => getCustomer(id), enabled: Boolean(id) });
+export function useCustomer(customerId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.customers.detail(customerId),
+    queryFn: () => getCustomer(customerId),
+    enabled: enabled && Boolean(customerId),
+  });
 }
 
 export function useCreateCustomer() {
   const queryClient = useQueryClient();
-  return useMutation({ mutationFn: (input: CustomerInput) => createCustomer(input), onSuccess: () => queryClient.invalidateQueries({ queryKey: customerKeys.lists() }) });
+  return useMutation({
+    mutationFn: (input: CreateCustomerInput) => createCustomer(input),
+    onSuccess: (customer) => {
+      queryClient.setQueryData(queryKeys.customers.detail(customer.id), customer);
+      invalidateFinancials(queryClient);
+    },
+  });
 }
 
-export function useUpdateCustomer(id: string) {
+export function useUpdateCustomer(customerId: string) {
   const queryClient = useQueryClient();
-  return useMutation({ mutationFn: (input: Partial<CustomerInput>) => updateCustomer(id, input), onSuccess: () => { queryClient.invalidateQueries({ queryKey: customerKeys.lists() }); queryClient.invalidateQueries({ queryKey: customerKeys.detail(id) }); } });
+  return useMutation({
+    mutationFn: (input: UpdateCustomerInput) => updateCustomer(customerId, input),
+    onSuccess: (customer) => {
+      queryClient.setQueryData(queryKeys.customers.detail(customerId), customer);
+      // Risk level and credit limit feed the analytics segments.
+      invalidateFinancials(queryClient);
+    },
+  });
 }
 
+/** Owner/admin only. */
 export function useDeleteCustomer() {
   const queryClient = useQueryClient();
-  return useMutation({ mutationFn: deleteCustomer, onSuccess: () => queryClient.invalidateQueries({ queryKey: customerKeys.lists() }) });
+  return useMutation({
+    mutationFn: (customerId: string) => deleteCustomer(customerId),
+    onSuccess: (_result, customerId) => {
+      queryClient.removeQueries({ queryKey: queryKeys.customers.detail(customerId) });
+      invalidateFinancials(queryClient);
+    },
+  });
 }

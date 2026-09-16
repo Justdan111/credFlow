@@ -1,83 +1,102 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  Plus,
-  Eye,
-  Edit2,
-  Trash2,
-  MoreHorizontal,
-  Search,
-  Filter,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { CheckCircle2, Eye, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+
+import { useCustomers } from '@/api/customers/customers.queries';
+import { DEBT_STATUSES, type DebtStatus } from '@/api/debts/debts.api';
+import { useCreateDebt, useDebts, useDeleteDebt, useMarkDebtPaid } from '@/api/debts/debts.queries';
+import { useDashboardSummary } from '@/api/dashboard/dashboard.queries';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/api/types';
+import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
+import { RecordDebtDialog } from '@/components/dialogs/record-debt-dialog';
+import { MetricCard } from '@/components/domain/metric-card';
+import { DebtStatusPill } from '@/components/domain/pills';
+import { EmptyState, ErrorState, InlineError, LoadingState } from '@/components/feedback/states';
+import { useSession } from '@/components/providers/session-provider';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RecordDebtDialog } from '@/components/dialogs/record-debt-dialog';
-import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
+import { Pagination } from '@/components/ui/pagination';
+import { formatCurrency, formatDate, formatNumber, initials } from '@/lib/format';
 
-const debts = [
-  { id: 1, customer: 'ABC Stores Ltd', amount: '₦250,000', startDate: 'Dec 1, 2025', dueDate: 'Feb 15, 2026', status: 'Overdue', daysOverdue: 5, interestAccrued: '₦5,200' },
-  { id: 2, customer: 'XYZ Retail', amount: '₦180,000', startDate: 'Jan 5, 2026', dueDate: 'Feb 20, 2026', status: 'Overdue', daysOverdue: 0, interestAccrued: '₦2,100' },
-  { id: 3, customer: 'Tech Solutions', amount: '₦320,000', startDate: 'Jan 20, 2026', dueDate: 'Mar 10, 2026', status: 'Pending', daysOverdue: null, interestAccrued: '₦1,800' },
-  { id: 4, customer: 'Fashion Hub', amount: '₦150,000', startDate: 'Nov 15, 2025', dueDate: 'Feb 10, 2026', status: 'Paid', daysOverdue: null, interestAccrued: '₦0' },
-  { id: 5, customer: 'Food & Drinks Co', amount: '₦420,000', startDate: 'Jan 10, 2026', dueDate: 'Mar 5, 2026', status: 'Pending', daysOverdue: null, interestAccrued: '₦2,900' },
+type StatusFilter = 'all' | DebtStatus | 'overdue';
+
+const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  ...DEBT_STATUSES.map((status) => ({
+    value: status as StatusFilter,
+    label: status === 'partial' ? 'Part paid' : status.charAt(0).toUpperCase() + status.slice(1),
+  })),
+  { value: 'overdue', label: 'Overdue' },
 ];
 
-const statusFilters = ['All', 'Pending', 'Overdue', 'Paid'];
-
 export default function DebtsPage() {
-  const [recordDebtOpen, setRecordDebtOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [, setSelectedDebtId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeStatus, setActiveStatus] = useState('All');
+  const { currency, canAdminister } = useSession();
 
-  const filtered = debts.filter((d) => {
-    const matchesSearch = d.customer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = activeStatus === 'All' || d.status === activeStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [customerFilter, setCustomerFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [isRecordOpen, setIsRecordOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const totalDebt = debts.reduce((sum, d) => sum + parseInt(d.amount.replace(/[^0-9]/g, '')), 0);
-  const overdueDebt = debts
-    .filter((d) => d.status === 'Overdue')
-    .reduce((sum, d) => sum + parseInt(d.amount.replace(/[^0-9]/g, '')), 0);
-  const paidDebt = debts
-    .filter((d) => d.status === 'Paid')
-    .reduce((sum, d) => sum + parseInt(d.amount.replace(/[^0-9]/g, '')), 0);
-
-  const kpis = [
-    { label: 'Outstanding', value: `₦${(totalDebt / 1000000).toFixed(1)}M`, change: '+5.2%', changeType: 'up', hint: `${debts.length} records` },
-    { label: 'Overdue', value: `₦${(overdueDebt / 1000).toFixed(0)}K`, change: '-12.3%', changeType: 'down', hint: `${debts.filter((d) => d.status === 'Overdue').length} overdue`, good: true },
-    { label: 'Collected', value: `₦${(paidDebt / 1000).toFixed(0)}K`, change: '+23%', changeType: 'up', hint: `${debts.filter((d) => d.status === 'Paid').length} completed` },
-  ];
-
-  const handleDeleteConfirm = async () => {
-    setIsDeleting(true);
-    setTimeout(() => {
-      setIsDeleting(false);
-      setDeleteConfirmOpen(false);
-      setSelectedDebtId(null);
-    }, 500);
+  /** A filter change resets the page with it; see the customers list. */
+  const applyStatusFilter = (status: StatusFilter) => {
+    setStatusFilter(status);
+    setPage(1);
   };
 
-  const handleRecordDebt = (debt: { customer: string; amount: string; dueDate: string }) => {
-    console.log('Recording debt:', debt);
+  const applyCustomerFilter = (customer: string) => {
+    setCustomerFilter(customer);
+    setPage(1);
   };
 
-  const openDeleteDialog = (debtId: number) => {
-    setSelectedDebtId(debtId);
-    setDeleteConfirmOpen(true);
+  const params = useMemo(
+    () => ({
+      page,
+      pageSize: DEFAULT_PAGE_SIZE,
+      // `overdue` is a separate flag server-side, not a status value: an
+      // overdue debt is still "pending" in the ledger.
+      status: statusFilter === 'all' || statusFilter === 'overdue' ? undefined : statusFilter,
+      overdue: statusFilter === 'overdue' ? ('true' as const) : undefined,
+      customerId: customerFilter || undefined,
+      sort: 'dueDate' as const,
+    }),
+    [customerFilter, page, statusFilter],
+  );
+
+  const debtsQuery = useDebts(params);
+  const summaryQuery = useDashboardSummary();
+  const customersQuery = useCustomers({ pageSize: MAX_PAGE_SIZE, sort: 'name' });
+  const createDebt = useCreateDebt();
+  const deleteDebt = useDeleteDebt();
+  const markPaid = useMarkDebtPaid();
+
+  const debts = debtsQuery.data?.items ?? [];
+  const summary = summaryQuery.data;
+
+  // Customer names are not on the debt payload, so they are resolved once per
+  // render instead of one request per row.
+  const customerNames = useMemo(() => {
+    const lookup = new Map<string, string>();
+    for (const customer of customersQuery.data?.items ?? []) lookup.set(customer.id, customer.name);
+    return lookup;
+  }, [customersQuery.data]);
+
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      await deleteDebt.mutateAsync(pendingDeleteId);
+      setPendingDeleteId(null);
+    } catch {
+      // Shown inside the dialog.
+    }
   };
 
   return (
@@ -87,7 +106,6 @@ export default function DebtsPage() {
       transition={{ duration: 0.4 }}
       className="max-w-7xl mx-auto space-y-6"
     >
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-medium mb-1">
@@ -102,7 +120,7 @@ export default function DebtsPage() {
         </div>
         <Button
           size="sm"
-          onClick={() => setRecordDebtOpen(true)}
+          onClick={() => setIsRecordOpen(true)}
           className="rounded-full text-xs h-9 shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -110,167 +128,213 @@ export default function DebtsPage() {
         </Button>
       </div>
 
-      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {kpis.map((k) => {
-          const isGood = k.good ? k.changeType === 'down' : k.changeType === 'up';
-          return (
-            <div
-              key={k.label}
-              className="rounded-2xl border border-border bg-card p-5 hover:border-primary/20 transition"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                  {k.label}
-                </p>
-                <div
-                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${
-                    isGood ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
-                  }`}
-                >
-                  {k.changeType === 'up' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
-                  {k.change}
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-semibold tracking-tight">{k.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-1.5">{k.hint}</p>
-            </div>
-          );
-        })}
+        <MetricCard
+          label="Outstanding"
+          value={formatCurrency(summary?.outstanding.value, currency, { compact: true })}
+          metric={summary?.outstanding}
+          hint="Across all open debts"
+        />
+        <MetricCard
+          label="Overdue"
+          value={formatCurrency(summary?.overdue.value, currency, { compact: true })}
+          metric={summary?.overdue}
+          lowerIsBetter
+          hint={
+            summary
+              ? `${formatNumber(summary.overdue.customerCount)} customers · ${formatNumber(summary.overdue.newCount)} new`
+              : undefined
+          }
+        />
+        <MetricCard
+          label="Collected"
+          value={formatCurrency(summary?.collected.value, currency, { compact: true })}
+          metric={summary?.collected}
+          hint="This month"
+        />
       </div>
 
-      {/* Filter bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <input
-            placeholder="Search by customer…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-9 pr-3 rounded-lg bg-background border border-border text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10"
-          />
-        </div>
-        <div className="flex items-center gap-1 p-1 rounded-lg border border-border bg-background">
-          {statusFilters.map((s) => (
+        <div className="flex items-center gap-1 p-1 rounded-lg border border-border bg-background overflow-x-auto">
+          {STATUS_FILTERS.map((filter) => (
             <button
-              key={s}
-              onClick={() => setActiveStatus(s)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeStatus === s ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              key={filter.value}
+              onClick={() => applyStatusFilter(filter.value)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
+                statusFilter === filter.value
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s}
+              {filter.label}
             </button>
           ))}
         </div>
-        <Button variant="outline" size="sm" className="h-10 rounded-lg text-xs">
-          <Filter className="w-3.5 h-3.5" />
-          More
-        </Button>
+        <select
+          value={customerFilter}
+          onChange={(event) => applyCustomerFilter(event.target.value)}
+          aria-label="Filter by customer"
+          className="h-10 rounded-lg border border-border bg-background px-3 text-sm sm:max-w-xs focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10"
+        >
+          <option value="">All customers</option>
+          {(customersQuery.data?.items ?? []).map((customer) => (
+            <option key={customer.id} value={customer.id}>
+              {customer.name}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Customer</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Amount</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Due</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Status</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">Interest</th>
-                <th className="w-10" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((d, i) => (
-                <motion.tr
-                  key={d.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.03 * i }}
-                  className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors group"
-                >
-                  <td className="px-6 py-3.5">
-                    <Link href={`/debts/${d.id}`} className="flex items-center gap-2.5 group/link">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
-                        {d.customer.split(' ').slice(0, 2).map((w) => w[0]).join('')}
-                      </div>
-                      <span className="text-sm font-medium group-hover/link:underline underline-offset-4">
-                        {d.customer}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-3.5 text-sm font-medium">{d.amount}</td>
-                  <td className="px-6 py-3.5 text-sm text-muted-foreground">
-                    {d.dueDate}
-                    {d.daysOverdue !== null && d.daysOverdue > 0 && (
-                      <span className="ml-2 text-destructive text-xs">· {d.daysOverdue}d late</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <StatusPill status={d.status} />
-                  </td>
-                  <td className="px-6 py-3.5 text-sm text-warning font-medium">{d.interestAccrued}</td>
-                  <td className="px-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="w-7 h-7 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted/60 hover:text-foreground transition-all flex items-center justify-center">
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem asChild className="text-xs gap-2">
-                          <Link href={`/debts/${d.id}`}>
-                            <Eye className="w-3.5 h-3.5" /> View
+        {debtsQuery.isPending ? (
+          <LoadingState label="Loading debts…" />
+        ) : debtsQuery.isError ? (
+          <ErrorState
+            error={debtsQuery.error}
+            fallback="We could not load your debts."
+            onRetry={() => debtsQuery.refetch()}
+          />
+        ) : debts.length === 0 ? (
+          <EmptyState
+            title={statusFilter === 'all' && !customerFilter ? 'No debts recorded' : 'No matching debts'}
+            description={
+              statusFilter === 'all' && !customerFilter
+                ? 'Record what a customer owes to start tracking collections.'
+                : 'Try a different status or customer filter.'
+            }
+            action={
+              <Button size="sm" onClick={() => setIsRecordOpen(true)} className="rounded-full text-xs h-8">
+                <Plus className="w-3.5 h-3.5" />
+                Record debt
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <Th>Customer</Th>
+                    <Th>Amount</Th>
+                    <Th>Remaining</Th>
+                    <Th>Due</Th>
+                    <Th>Status</Th>
+                    <th className="w-10" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {debts.map((debt, index) => {
+                    const customerName = customerNames.get(debt.customerId) ?? 'Customer';
+                    return (
+                      <motion.tr
+                        key={debt.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.03 * index }}
+                        className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors group"
+                      >
+                        <td className="px-6 py-3.5">
+                          <Link href={`/debts/${debt.id}`} className="flex items-center gap-2.5 group/link">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                              {initials(customerName)}
+                            </div>
+                            <span className="text-sm font-medium group-hover/link:underline underline-offset-4">
+                              {customerName}
+                            </span>
                           </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="text-xs gap-2">
-                          <Link href={`/debts/${d.id}`}>
-                            <Edit2 className="w-3.5 h-3.5" /> Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => openDeleteDialog(d.id)}
-                          className="text-xs gap-2 text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                        </td>
+                        <td className="px-6 py-3.5 text-sm font-medium">
+                          {formatCurrency(debt.amount, currency)}
+                        </td>
+                        <td className="px-6 py-3.5 text-sm">
+                          {formatCurrency(debt.amountRemaining, currency)}
+                        </td>
+                        <td className="px-6 py-3.5 text-sm text-muted-foreground">
+                          {formatDate(debt.dueDate)}
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <DebtStatusPill status={debt.status} overdue={debt.overdue} />
+                        </td>
+                        <td className="px-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                aria-label={`Actions for the ${formatCurrency(debt.amount, currency)} debt`}
+                                className="w-7 h-7 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-muted/60 hover:text-foreground transition-all flex items-center justify-center"
+                              >
+                                <MoreHorizontal className="w-3.5 h-3.5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem asChild className="text-xs gap-2">
+                                <Link href={`/debts/${debt.id}`}>
+                                  <Eye className="w-3.5 h-3.5" /> View
+                                </Link>
+                              </DropdownMenuItem>
+                              {debt.status !== 'paid' && (
+                                <DropdownMenuItem
+                                  onClick={() => markPaid.mutate(debt.id)}
+                                  className="text-xs gap-2"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Mark as paid
+                                </DropdownMenuItem>
+                              )}
+                              {canAdminister && (
+                                <DropdownMenuItem
+                                  onClick={() => setPendingDeleteId(debt.id)}
+                                  className="text-xs gap-2 text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              meta={debtsQuery.data?.meta}
+              page={page}
+              onPageChange={setPage}
+              isLoading={debtsQuery.isFetching}
+              label="debts"
+            />
+          </>
+        )}
       </div>
 
-      <RecordDebtDialog open={recordDebtOpen} onOpenChange={setRecordDebtOpen} onRecord={handleRecordDebt} />
+      <InlineError error={markPaid.error} fallback="We could not mark that debt as paid." />
+
+      <RecordDebtDialog
+        open={isRecordOpen}
+        onOpenChange={setIsRecordOpen}
+        onSubmit={(input) => createDebt.mutateAsync(input)}
+        isSubmitting={createDebt.isPending}
+        error={createDebt.error}
+      />
+
       <DeleteConfirmationDialog
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
         title="Delete debt"
-        description="Are you sure you want to delete this debt record? This action cannot be undone."
-        onConfirm={handleDeleteConfirm}
-        isLoading={isDeleting}
+        description="This removes the debt from your records. Payments already recorded against it stay, but stop counting towards it. This cannot be undone."
+        onConfirm={handleDelete}
+        isLoading={deleteDebt.isPending}
+        error={deleteDebt.error}
       />
     </motion.div>
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { bg: string; dot: string }> = {
-    Paid: { bg: 'bg-success/10 text-success', dot: 'bg-success' },
-    Overdue: { bg: 'bg-destructive/10 text-destructive', dot: 'bg-destructive' },
-    Pending: { bg: 'bg-warning/15 text-warning', dot: 'bg-warning' },
-  };
-  const s = map[status] ?? { bg: 'bg-muted text-muted-foreground', dot: 'bg-muted-foreground' };
+function Th({ children }: { children: React.ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${s.bg}`}>
-      <span className={`w-1 h-1 rounded-full ${s.dot}`} />
-      {status}
-    </span>
+    <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground font-medium px-6 py-3">
+      {children}
+    </th>
   );
 }

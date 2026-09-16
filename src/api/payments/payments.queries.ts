@@ -1,13 +1,94 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createDebtPayment, createPayment, deletePayment, getPayment, listPayments, type PaymentInput, type PaymentListParams } from '@/api/payments/payments.api';
-import { debtKeys } from '@/api/debts/debts.queries';
 
-export const paymentKeys = { all: ['payments'] as const, lists: () => [...paymentKeys.all, 'list'] as const, list: (params?: PaymentListParams) => [...paymentKeys.lists(), params] as const, detail: (id: string) => [...paymentKeys.all, 'detail', id] as const };
-export function usePayments(params?: PaymentListParams) { return useQuery({ queryKey: paymentKeys.list(params), queryFn: () => listPayments(params) }); }
-export function usePayment(id: string) { return useQuery({ queryKey: paymentKeys.detail(id), queryFn: () => getPayment(id), enabled: Boolean(id) }); }
-function invalidatePayments(queryClient: ReturnType<typeof useQueryClient>) { queryClient.invalidateQueries({ queryKey: paymentKeys.all }); queryClient.invalidateQueries({ queryKey: debtKeys.all }); }
-export function useCreatePayment() { const queryClient = useQueryClient(); return useMutation({ mutationFn: createPayment, onSuccess: () => invalidatePayments(queryClient) }); }
-export function useCreateDebtPayment(debtId: string) { const queryClient = useQueryClient(); return useMutation({ mutationFn: (input: Omit<PaymentInput, 'debtId'>) => createDebtPayment(debtId, input), onSuccess: () => invalidatePayments(queryClient) }); }
-export function useDeletePayment() { const queryClient = useQueryClient(); return useMutation({ mutationFn: deletePayment, onSuccess: () => invalidatePayments(queryClient) }); }
+import { invalidateFinancials } from '@/api/invalidate';
+import {
+  createDebtPayment,
+  createPayment,
+  deletePayment,
+  getPayment,
+  listCustomerPayments,
+  listDebtPayments,
+  listPayments,
+  type CreatePaymentInput,
+  type PaymentListParams,
+} from '@/api/payments/payments.api';
+import { queryKeys } from '@/api/query-keys';
+
+export function usePayments(params?: PaymentListParams, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.payments.list(params),
+    queryFn: () => listPayments(params),
+    enabled,
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useCustomerPayments(
+  customerId: string,
+  params?: Omit<PaymentListParams, 'customerId'>,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: queryKeys.payments.byCustomer(customerId, params),
+    queryFn: () => listCustomerPayments(customerId, params),
+    enabled: enabled && Boolean(customerId),
+  });
+}
+
+export function useDebtPayments(
+  debtId: string,
+  params?: Omit<PaymentListParams, 'debtId'>,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: queryKeys.payments.byDebt(debtId, params),
+    queryFn: () => listDebtPayments(debtId, params),
+    enabled: enabled && Boolean(debtId),
+  });
+}
+
+export function usePayment(paymentId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.payments.detail(paymentId),
+    queryFn: () => getPayment(paymentId),
+    enabled: enabled && Boolean(paymentId),
+  });
+}
+
+export function useCreatePayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreatePaymentInput) => createPayment(input),
+    onSuccess: (payment) => {
+      queryClient.setQueryData(queryKeys.payments.detail(payment.id), payment);
+      invalidateFinancials(queryClient);
+    },
+  });
+}
+
+/** Records a payment against one debt; the server derives the customer. */
+export function useCreateDebtPayment(debtId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Omit<CreatePaymentInput, 'customerId' | 'debtId'>) =>
+      createDebtPayment(debtId, input),
+    onSuccess: (payment) => {
+      queryClient.setQueryData(queryKeys.payments.detail(payment.id), payment);
+      invalidateFinancials(queryClient);
+    },
+  });
+}
+
+/** Owner only. Voiding a payment recomputes the linked debt's status. */
+export function useDeletePayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentId: string) => deletePayment(paymentId),
+    onSuccess: (_result, paymentId) => {
+      queryClient.removeQueries({ queryKey: queryKeys.payments.detail(paymentId) });
+      invalidateFinancials(queryClient);
+    },
+  });
+}

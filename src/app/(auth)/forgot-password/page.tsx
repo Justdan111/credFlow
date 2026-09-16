@@ -4,21 +4,37 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Mail } from 'lucide-react';
+
+import { useRequestPasswordReset } from '@/api/auth/auth.queries';
+import { forgotPasswordSchema, type ForgotPasswordValues } from '@/api/auth/auth.schema';
+import { InlineError } from '@/components/feedback/states';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { validateForm, type FieldErrors } from '@/lib/form';
 
 export default function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const requestReset = useRequestPasswordReset();
+  const [email, setEmail] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<ForgotPasswordValues>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const result = validateForm(forgotPasswordSchema, { email });
+    setFieldErrors(result.errors ?? {});
+    if (!result.success) return;
+
+    try {
+      await requestReset.mutateAsync(result.data.email);
+      // The API answers the same way whether or not the address is registered,
+      // and so does this screen: branching here would turn it into an
+      // account-enumeration oracle.
       setIsSubmitted(true);
-    }, 500);
+    } catch {
+      // Only transport-level problems reach here; shown below.
+    }
   };
 
   if (isSubmitted) {
@@ -42,13 +58,15 @@ export default function ForgotPasswordPage() {
             Check your email.
           </h1>
           <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto">
-            We&apos;ve sent a password reset link to your inbox. It&apos;ll expire in 15 minutes.
+            If <span className="text-foreground">{email}</span> is registered, a reset link is on
+            its way. The link expires in an hour.
           </p>
 
           <div className="mt-8 p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground text-left">
             <p>
               Didn&apos;t receive it? Check your spam folder, or{' '}
               <button
+                type="button"
                 onClick={() => setIsSubmitted(false)}
                 className="text-foreground hover:underline underline-offset-4"
               >
@@ -80,13 +98,10 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm"
       >
-        {/* Eyebrow */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-full mb-6">
             <Mail className="w-3 h-3 text-primary" strokeWidth={2.25} />
-            <span className="text-xs font-medium text-primary tracking-wide">
-              Password reset
-            </span>
+            <span className="text-xs font-medium text-primary tracking-wide">Password reset</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-semibold leading-[1.05] tracking-[-0.02em]">
             Forgot your password?
@@ -96,31 +111,32 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="email"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Email
-            </Label>
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <FormField label="Email" htmlFor="email" error={fieldErrors.email}>
             <Input
-              id="email"
               type="email"
+              autoComplete="email"
               placeholder="you@example.com"
-              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className="h-11 rounded-lg bg-background/80 backdrop-blur-xs border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
             />
-          </div>
+          </FormField>
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={requestReset.isPending}
             className="w-full h-11 rounded-full mt-4 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all ring-1 ring-inset ring-white/10"
           >
-            {isLoading ? 'Sending…' : 'Send reset link'}
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
+            {requestReset.isPending ? 'Sending…' : 'Send reset link'}
+            {!requestReset.isPending && <ArrowRight className="w-4 h-4" />}
           </Button>
+
+          <InlineError
+            error={requestReset.error}
+            fallback="We could not send the reset link. Please try again."
+            className="text-center"
+          />
         </form>
 
         <Link

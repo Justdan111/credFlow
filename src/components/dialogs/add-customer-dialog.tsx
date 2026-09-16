@@ -1,5 +1,16 @@
 'use client';
 
+import { useState } from 'react';
+import { ArrowRight, UserPlus } from 'lucide-react';
+
+import type { CreateCustomerInput } from '@/api/customers/customers.api';
+import { RISK_LEVELS } from '@/api/customers/customers.api';
+import {
+  quickAddCustomerSchema,
+  type QuickAddCustomerValues,
+} from '@/api/customers/customers.schema';
+import { InlineError } from '@/components/feedback/states';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,31 +19,52 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { UserPlus, ArrowRight } from 'lucide-react';
+import { Select } from '@/components/ui/select';
+import { optionalText, validateForm, type FieldErrors } from '@/lib/form';
 
 interface AddCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd?: (customer: { name: string; email: string; phone: string }) => Promise<void> | void;
+  onSubmit: (input: CreateCustomerInput) => Promise<unknown>;
+  isSubmitting: boolean;
+  error?: unknown;
 }
 
-export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+const EMPTY = { name: '', email: '', phone: '', riskLevel: 'low' as const };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+export function AddCustomerDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  isSubmitting,
+  error,
+}: AddCustomerDialogProps) {
+  const [values, setValues] = useState(EMPTY);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<QuickAddCustomerValues>>({});
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const result = validateForm(quickAddCustomerSchema, values);
+    setFieldErrors(result.errors ?? {});
+    if (!result.success) return;
+
     try {
-      await onAdd?.(formData);
-      setFormData({ name: '', email: '', phone: '' });
+      // Only email and phone are optional; sending "" would store an empty
+      // string where the column should stay null.
+      await onSubmit({
+        name: result.data.name,
+        email: optionalText(result.data.email),
+        phone: optionalText(result.data.phone),
+        riskLevel: result.data.riskLevel,
+      });
+      setValues(EMPTY);
+      setFieldErrors({});
       onOpenChange(false);
     } catch {
-      // The parent owns and displays the mutation error.
+      // The parent owns the mutation error and it is rendered below.
     }
   };
 
@@ -45,42 +77,67 @@ export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDial
         <DialogHeader>
           <DialogTitle>Add a customer</DialogTitle>
           <DialogDescription>
-            Save their business details so you can start tracking debts.
+            Save their details so you can start tracking what they owe.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Business name">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <FormField label="Name" htmlFor="customer-name" error={fieldErrors.name}>
             <Input
               placeholder="e.g. ABC Stores Ltd"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+              value={values.name}
+              onChange={(event) => setValues({ ...values, name: event.target.value })}
+              className="h-11 rounded-lg bg-background/80 border-border"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Email">
+          <FormField
+            label="Email"
+            htmlFor="customer-email"
+            error={fieldErrors.email}
+            hint="Optional"
+          >
             <Input
               type="email"
               placeholder="customer@example.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+              value={values.email}
+              onChange={(event) => setValues({ ...values, email: event.target.value })}
+              className="h-11 rounded-lg bg-background/80 border-border"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Phone">
+          <FormField
+            label="Phone"
+            htmlFor="customer-phone"
+            error={fieldErrors.phone}
+            hint="Optional"
+          >
             <Input
               type="tel"
               placeholder="+234 800 000 0000"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              required
-              className="h-11 rounded-lg bg-background/80 border-border focus-visible:border-primary/40 focus-visible:ring-primary/15"
+              value={values.phone}
+              onChange={(event) => setValues({ ...values, phone: event.target.value })}
+              className="h-11 rounded-lg bg-background/80 border-border"
             />
-          </Field>
+          </FormField>
+
+          <FormField label="Risk level" htmlFor="customer-risk" error={fieldErrors.riskLevel}>
+            <Select
+              value={values.riskLevel}
+              onChange={(event) =>
+                setValues({ ...values, riskLevel: event.target.value as typeof values.riskLevel })
+              }
+              className="h-11 rounded-lg bg-background/80"
+            >
+              {RISK_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {level.charAt(0).toUpperCase() + level.slice(1)}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+
+          <InlineError error={error} fallback="We could not add that customer." className="text-xs" />
 
           <DialogFooter>
             <Button
@@ -95,25 +152,15 @@ export function AddCustomerDialog({ open, onOpenChange, onAdd }: AddCustomerDial
             <Button
               type="submit"
               size="sm"
-                            disabled={!onAdd}
+              disabled={isSubmitting}
               className="rounded-full h-9 text-xs shadow-sm shadow-primary/20 ring-1 ring-inset ring-white/10"
             >
-              {isLoading ? 'Adding…' : 'Add customer'}
-              Add customer
-              <ArrowRight className="w-3.5 h-3.5" />
+              {isSubmitting ? 'Adding…' : 'Add customer'}
+              {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      {children}
-    </div>
   );
 }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/components/layout/sidebar-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
+import { SessionProvider } from "@/components/providers/session-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +45,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
       <QueryProvider>
-        <SidebarProvider>{children}</SidebarProvider>
+        <SessionProvider>
+          <SidebarProvider>{children}</SidebarProvider>
+        </SessionProvider>
       </QueryProvider>
       </ThemeProvider>
       </body>

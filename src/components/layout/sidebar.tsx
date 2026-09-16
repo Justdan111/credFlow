@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Users,
@@ -17,6 +17,8 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSession } from '@/components/providers/session-provider';
+import { initials } from '@/lib/format';
 
 interface SidebarProps {
   onCollapseChange?: (isCollapsed: boolean) => void;
@@ -36,10 +38,17 @@ const insights = [
 
 export function Sidebar({ onCollapseChange }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, signOut, isSigningOut } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleMobile = () => setIsOpen(!isOpen);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/login');
+  };
 
   const toggleCollapse = () => {
     const next = !isCollapsed;
@@ -151,34 +160,38 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
           {isCollapsed ? (
             <div className="flex flex-col items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[11px] font-semibold">
-                AK
+                {initials(user?.name)}
               </div>
-              <Link
-                href="/"
-                className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted/60 transition"
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted/60 transition disabled:opacity-50"
                 title="Log out"
               >
                 <LogOut className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[11px] font-semibold shrink-0">
-                AK
+                {initials(user?.name)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">Amina Bello</p>
+                <p className="text-xs font-medium truncate">{user?.name ?? 'Your account'}</p>
                 <p className="text-[10px] text-muted-foreground truncate">
-                  amina@bellotraders.ng
+                  {user?.email ?? ''}
                 </p>
               </div>
-              <Link
-                href="/"
-                className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted/60 transition"
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted/60 transition disabled:opacity-50"
                 title="Log out"
               >
                 <LogOut className="w-3.5 h-3.5" />
-              </Link>
+              </button>
             </div>
           )}
         </div>

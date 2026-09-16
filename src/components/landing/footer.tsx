@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Wallet } from 'lucide-react';
 
 const Footer = () => {
@@ -41,12 +42,12 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <a href="/" className="flex items-center gap-2 mb-4">
+            <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
                 <Wallet className="w-4 h-4 text-background" strokeWidth={2} />
               </div>
               <span className="font-semibold tracking-tight">CredFlow</span>
-            </a>
+            </Link>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-55">
               Smart debt tracking for African SMEs.
             </p>

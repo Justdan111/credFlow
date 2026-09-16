@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Wallet, ArrowRight } from 'lucide-react';
@@ -37,12 +38,12 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
             <Wallet className="w-4 h-4 text-background" strokeWidth={2} />
           </div>
           <span className="font-semibold tracking-tight text-[15px]">CredFlow</span>
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
