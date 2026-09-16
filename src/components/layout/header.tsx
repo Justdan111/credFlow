@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Search, Settings, User } from 'lucide-react';
-import { useState } from 'react';
+import { LogOut, Settings, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { GlobalSearch } from '@/components/layout/global-search';
 import { useSession } from '@/components/providers/session-provider';
 import { initials } from '@/lib/format';
 import { ModeToggle } from './mood-togggle';
@@ -25,37 +25,15 @@ interface HeaderProps {
 export function Header({}: HeaderProps) {
   const router = useRouter();
   const { user, business, signOut, isSigningOut } = useSession();
-  const [search, setSearch] = useState('');
 
   const handleSignOut = async () => {
     await signOut();
     router.replace('/login');
   };
 
-  /**
-   * There is no global search endpoint yet, so the box routes to the customer
-   * list with the term pre-applied instead of pretending to search everything.
-   */
-  const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    const term = search.trim();
-    router.push(term ? `/customers?search=${encodeURIComponent(term)}` : '/customers');
-  };
-
   return (
     <header className="h-14 bg-background/70 backdrop-blur-xl border-b border-border sticky top-0 z-30 flex items-center gap-3 px-4 md:px-6 lg:px-8">
-      <form onSubmit={handleSearch} className="flex-1 max-w-md ml-12 lg:ml-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search customers…"
-            aria-label="Search customers"
-            className="w-full h-9 pl-9 pr-3 rounded-lg bg-muted/40 border border-border/60 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition"
-          />
-        </div>
-      </form>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-1.5">
         <ModeToggle />

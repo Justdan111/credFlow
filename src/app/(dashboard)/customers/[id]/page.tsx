@@ -29,6 +29,7 @@ import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmati
 import { EditCustomerDialog } from '@/components/dialogs/edit-customer-dialog';
 import { RecordDebtDialog } from '@/components/dialogs/record-debt-dialog';
 import { RecordPaymentDialog } from '@/components/dialogs/record-payment-dialog';
+import { CustomerNotes } from '@/components/domain/customer-notes';
 import { DebtStatusPill, MethodBadge, RiskPill } from '@/components/domain/pills';
 import { EmptyState, ErrorState, LoadingState } from '@/components/feedback/states';
 import { useSession } from '@/components/providers/session-provider';
@@ -245,6 +246,8 @@ export default function CustomerDetailPage() {
             )}
           </Section>
 
+          <CustomerNotes customerId={customerId} customerName={customer.name} />
+
           <Section title="Payments" href="/payments">
             {paymentsQuery.isPending ? (
               <LoadingState label="Loading payments…" />
@@ -292,7 +295,7 @@ export default function CustomerDetailPage() {
           </Section>
 
           {customer.notes && (
-            <Section title="Notes">
+            <Section title="Internal notes">
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {customer.notes}
               </p>

@@ -2,7 +2,9 @@
 
 **Last verified:** 2026-09-16, end to end against the Go API running on a
 throwaway Postgres instance (register → onboarding → customer → debt → payment
-→ dashboard → analytics → export → refresh rotation → logout).
+→ dashboard → analytics → export → refresh rotation → logout), plus a contract
+replay asserting every field these modules declare is present in the live
+response.
 
 **Backend:** `credflow api` · **Frontend:** `credFlow`
 
@@ -25,7 +27,11 @@ throwaway Postgres instance (register → onboarding → customer → debt → p
 | Payments | [x] List, filters, pagination, detail, create, debt-linked create, void |
 | Dashboard | [x] Summary tiles, trend, risk mix, recent debts and payments |
 | Analytics | [x] Collection rate, risk trend, segments, CSV export |
-| Notifications, reminders, files, reports, audit, global search | [B] No backend routes; deliberately not built |
+| Team | [x] List, invite, change role, remove — Settings → Team |
+| Audit trail | [x] Filterable activity feed — Settings → Activity |
+| Customer notes | [x] Timeline with add and retract on customer detail |
+| Global search | [x] Header dropdown across customers, debts and payments |
+| Notifications, reminders, files, reports, receipts, 2FA | [B] No backend routes; deliberately not built |
 
 ## Frontend Foundation
 
@@ -127,14 +133,17 @@ throwaway Postgres instance (register → onboarding → customer → debt → p
 | [x] | `GET /payments` | List: method and customer filters, pagination |
 | [x] | `POST /payments` | Record-payment dialog with an idempotency key |
 | [x] | `GET /payments/:id` | Detail page |
+| [x] | `PATCH /payments/:id` | Owner/admin; "Correct" on payment detail |
 | [x] | `DELETE /payments/:id` | Owner only; shown as "void payment" |
 | [x] | `GET /customers/:id/payments` | Customer detail |
-| [x] | Payments for one debt | Filtered through `GET /payments?debtId=…` |
+| [x] | `GET /debts/{debtId}/payments` | Debt detail |
 
 - [x] One idempotency key per opened dialog. Verified: a repeated submit returns 200
       with the original payment instead of recording the money twice.
-- [B] No `GET /debts/:id/payments` route exists; the filtered collection endpoint is
-      used instead, in one documented place.
+- [x] `GET /debts/:debtId/payments` now exists and is used directly; the
+      `?debtId=` workaround is gone.
+- [x] A correction cannot move a payment to another customer or debt — the API
+      does not accept it, and the dialog says why.
 
 ## 6. Dashboard
 
@@ -163,7 +172,31 @@ throwaway Postgres instance (register → onboarding → customer → debt → p
 - [x] KPIs are derived solely from returned data. The old page's invented metrics
       (days-to-collect, retention, bad-debt ratio) were removed rather than faked.
 
-## 8. Backend Routes Not Built
+## 8. Team, Notes, Audit and Search
+
+| Status | Route | Frontend surface |
+| --- | --- | --- |
+| [x] | `GET /users` | Settings → Team, with pending invitations flagged |
+| [x] | `POST /users` | Invite dialog; only offers roles the caller may grant |
+| [x] | `PATCH /users/:userId` | Inline role selector |
+| [x] | `DELETE /users/:userId` | Owner only, with a confirmation dialog |
+| [x] | `GET /customers/:customerId/notes` | Customer detail timeline |
+| [x] | `POST /customers/:customerId/notes` | Inline composer with a channel selector |
+| [x] | `DELETE /notes/:noteId` | Owner/admin only |
+| [x] | `GET /audit-logs` | Settings → Activity, filterable by action |
+| [x] | `GET /search` | Header dropdown, keyboard navigable |
+
+- [!] The UI mirrors the API's privilege rules rather than discovering them by
+      failing: the invite dialog lists only grantable roles, and the role
+      selector and remove button are hidden for the last owner and for yourself.
+      The API remains the enforcement point; this just avoids offering a choice
+      that comes back as a 403.
+- [!] An invitation link is never returned by the API and never rendered. It is a
+      credential for taking over that account and goes only to the invitee.
+- [x] Search short-circuits below two characters instead of sending a request the
+      API answers with 400.
+
+## 9. Backend Routes Not Built
 
 Not integrated, and deliberately not mocked: 2FA, onboarding seed, customer notes
 and activity, debt reschedule/waive/schedule/activity, payment update, receipts,
@@ -181,4 +214,7 @@ customer list with the term applied instead of pretending to search everything.
       cookie alone, with no bearer token.
 - [x] 400, 401, 404 and 409 bodies all surface a useful message through `ApiError`.
 - [x] Every query string the UI sends was replayed against the live API: all 200.
+- [x] Every field these modules type was replayed against the live API and
+      confirmed present, including the `{ member }` wrapper on invite and the
+      omitted-vs-null shape of cleared optional fields.
 - [ ] Browser-driven click-through of each screen against a seeded database.

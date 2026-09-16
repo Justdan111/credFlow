@@ -18,8 +18,15 @@ export const paymentSchema = z.object({
   paidAt: isoDate,
 });
 
+/**
+ * Correcting a payment. The customer and debt are absent because the API does
+ * not accept them — see `updatePayment`.
+ */
+export const updatePaymentSchema = paymentSchema.omit({ customerId: true, debtId: true });
+
 /** From a debt's own page the debt and customer come from the URL. */
 export const debtPaymentSchema = paymentSchema.omit({ customerId: true, debtId: true });
 
 export type PaymentValues = z.infer<typeof paymentSchema>;
+export type UpdatePaymentValues = z.infer<typeof updatePaymentSchema>;
 export type DebtPaymentValues = z.infer<typeof debtPaymentSchema>;

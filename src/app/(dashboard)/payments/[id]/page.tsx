@@ -4,12 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Phone, Receipt, Trash2 } from 'lucide-react';
+import { ArrowLeft, Mail, Pencil, Phone, Receipt, Trash2 } from 'lucide-react';
 
 import { useCustomer } from '@/api/customers/customers.queries';
 import { useDebt } from '@/api/debts/debts.queries';
-import { useDeletePayment, usePayment } from '@/api/payments/payments.queries';
+import { useDeletePayment, usePayment, useUpdatePayment } from '@/api/payments/payments.queries';
 import { DeleteConfirmationDialog } from '@/components/dialogs/delete-confirmation-dialog';
+import { EditPaymentDialog } from '@/components/dialogs/edit-payment-dialog';
 import { DebtStatusPill, MethodBadge } from '@/components/domain/pills';
 import { ErrorState, LoadingState } from '@/components/feedback/states';
 import { useSession } from '@/components/providers/session-provider';
@@ -20,9 +21,10 @@ export default function PaymentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const paymentId = params.id;
-  const { currency, isOwner } = useSession();
+  const { currency, isOwner, canAdminister } = useSession();
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const paymentQuery = usePayment(paymentId);
   const payment = paymentQuery.data;
@@ -31,6 +33,7 @@ export default function PaymentDetailPage() {
   const debtQuery = useDebt(payment?.debtId ?? '', Boolean(payment?.debtId));
 
   const deletePayment = useDeletePayment();
+  const updatePayment = useUpdatePayment(paymentId);
 
   const handleDelete = async () => {
     try {
@@ -97,18 +100,33 @@ export default function PaymentDetailPage() {
             </p>
           </div>
 
-          {/* Voiding a payment is owner-only; the API rejects anyone else. */}
-          {isOwner && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsDeleteOpen(true)}
-              className="rounded-full text-xs h-9 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Void payment
-            </Button>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Correcting a payment moves money on the ledger, so it needs the
+                same elevation as editing a debt. */}
+            {canAdminister && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditOpen(true)}
+                className="rounded-full text-xs h-9"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Correct
+              </Button>
+            )}
+            {/* Voiding a payment is owner-only; the API rejects anyone else. */}
+            {isOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsDeleteOpen(true)}
+                className="rounded-full text-xs h-9 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Void payment
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -208,6 +226,17 @@ export default function PaymentDetailPage() {
           )}
         </div>
       </div>
+
+      <EditPaymentDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        payment={payment}
+        currency={currency}
+        isLinkedToDebt={Boolean(payment.debtId)}
+        onSubmit={(input) => updatePayment.mutateAsync(input)}
+        isSubmitting={updatePayment.isPending}
+        error={updatePayment.error}
+      />
 
       <DeleteConfirmationDialog
         open={isDeleteOpen}

@@ -11,8 +11,10 @@ import {
   listCustomerPayments,
   listDebtPayments,
   listPayments,
+  updatePayment,
   type CreatePaymentInput,
   type PaymentListParams,
+  type UpdatePaymentInput,
 } from '@/api/payments/payments.api';
 import { queryKeys } from '@/api/query-keys';
 
@@ -76,6 +78,21 @@ export function useCreateDebtPayment(debtId: string) {
       createDebtPayment(debtId, input),
     onSuccess: (payment) => {
       queryClient.setQueryData(queryKeys.payments.detail(payment.id), payment);
+      invalidateFinancials(queryClient);
+    },
+  });
+}
+
+/**
+ * Owner/admin only. Correcting an amount moves the linked debt between pending,
+ * partial and paid, so the whole financial cluster is invalidated.
+ */
+export function useUpdatePayment(paymentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdatePaymentInput) => updatePayment(paymentId, input),
+    onSuccess: (payment) => {
+      queryClient.setQueryData(queryKeys.payments.detail(paymentId), payment);
       invalidateFinancials(queryClient);
     },
   });
