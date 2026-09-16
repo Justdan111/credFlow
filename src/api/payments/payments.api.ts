@@ -63,6 +63,17 @@ export interface CreatePaymentInput {
   idempotencyKey?: string;
 }
 
+/** Every key is optional; an omitted field is left unchanged by the API. */
+export interface UpdatePaymentInput {
+  amount?: number;
+  method?: PaymentMethod;
+  /** An empty string clears the field; omitting the key leaves it alone. */
+  reference?: string;
+  notes?: string;
+  /** RFC 3339. */
+  paidAt?: string;
+}
+
 export async function listPayments(params?: PaymentListParams): Promise<Paginated<Payment>> {
   const response = await apiClient.get<ApiEnvelope<Payment[]>>('/payments', {
     params: cleanParams(params),
@@ -83,16 +94,20 @@ export async function listCustomerPayments(
 }
 
 /**
- * Payments for one debt.
+ * `GET /debts/:debtId/payments`.
  *
- * The API exposes no nested list route, so this filters the collection
- * endpoint by `debtId` — same result, one documented place.
+ * The nested route confirms the debt belongs to this tenant, so an unknown id
+ * answers 404 rather than an empty list — which would read as "this debt has no
+ * payments" and hide the mistake.
  */
 export async function listDebtPayments(
   debtId: string,
   params?: Omit<PaymentListParams, 'debtId'>,
 ): Promise<Paginated<Payment>> {
-  return listPayments({ ...params, debtId });
+  const response = await apiClient.get<ApiEnvelope<Payment[]>>(`/debts/${debtId}/payments`, {
+    params: cleanParams(params),
+  });
+  return unwrapPage(response, params);
 }
 
 export async function getPayment(paymentId: string): Promise<Payment> {
@@ -112,6 +127,23 @@ export async function createDebtPayment(
   input: Omit<CreatePaymentInput, 'customerId' | 'debtId'>,
 ): Promise<Payment> {
   return unwrap(await apiClient.post<ApiEnvelope<Payment>>(`/debts/${debtId}/payments`, input));
+}
+
+/**
+ * Corrects a recorded payment. Requires the owner or admin role.
+ *
+ * The linked debt's status is recomputed in the same transaction, so raising an
+ * amount can settle a debt and lowering it can reopen one.
+ *
+ * `customerId` and `debtId` are deliberately absent: re-pointing a payment at a
+ * different debt would move two balances under one opaque edit. Void it and
+ * record it again, which leaves both actions in the audit trail.
+ */
+export async function updatePayment(
+  paymentId: string,
+  input: UpdatePaymentInput,
+): Promise<Payment> {
+  return unwrap(await apiClient.patch<ApiEnvelope<Payment>>(`/payments/${paymentId}`, input));
 }
 
 /** Voids the payment and recomputes the linked debt. Owner role only. */

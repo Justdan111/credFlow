@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { Building2, Check, Palette, Shield, User } from 'lucide-react';
+import { Building2, Check, History, Palette, Shield, User, Users } from 'lucide-react';
 
 import type { User as SessionUser } from '@/api/auth/auth.api';
 import {
@@ -30,6 +30,8 @@ import {
   businessProfileSchema,
   type BusinessProfileValues,
 } from '@/api/businesses/businesses.schema';
+import { ActivityPanel } from '@/components/domain/activity-panel';
+import { TeamPanel } from '@/components/domain/team-panel';
 import { ErrorState, InlineError, InlineSuccess, LoadingState } from '@/components/feedback/states';
 import { useSession } from '@/components/providers/session-provider';
 import { Button } from '@/components/ui/button';
@@ -43,6 +45,8 @@ import { formatDateTime } from '@/lib/format';
 const TABS = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'business', label: 'Business', icon: Building2 },
+  { id: 'team', label: 'Team', icon: Users },
+  { id: 'activity', label: 'Activity', icon: History },
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'appearance', label: 'Appearance', icon: Palette },
 ] as const;
@@ -94,6 +98,8 @@ export default function SettingsPage() {
         <div>
           {activeTab === 'profile' && <ProfilePanel />}
           {activeTab === 'business' && <BusinessPanel />}
+          {activeTab === 'team' && <TeamPanel />}
+          {activeTab === 'activity' && <ActivityPanel />}
           {activeTab === 'security' && <SecurityPanel />}
           {activeTab === 'appearance' && <AppearancePanel />}
         </div>
