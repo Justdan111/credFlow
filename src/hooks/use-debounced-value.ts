@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-/**
- * Delays a fast-changing value so it can drive a server query.
- *
- * Search boxes are the reason this exists: sending one request per keystroke
- * both hammers the API and races — a slow early response can land after a
- * later one and repaint the table with stale rows.
- */
+/** Delays a fast-changing value so it can drive a server query without racing. */
 export function useDebouncedValue<T>(value: T, delayMs = 300): T {
   const [debounced, setDebounced] = useState(value);
 

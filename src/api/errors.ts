@@ -1,14 +1,7 @@
 import axios from 'axios';
 import type { ApiEnvelope } from '@/api/types';
 
-/**
- * The single error type the UI has to know about.
- *
- * Axios errors leak transport details (config, request, headers) into every
- * component that renders a failure. Normalising at the boundary means a page
- * only ever asks two things: what should I tell the user, and was this a
- * permission problem?
- */
+/** The only error type the UI sees, so no component imports Axios. */
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -29,7 +22,6 @@ export class ApiError extends Error {
     return this.status === 401;
   }
 
-  /** The caller is signed in but lacks the role the route requires. */
   get isForbidden() {
     return this.status === 403;
   }
@@ -38,7 +30,6 @@ export class ApiError extends Error {
     return this.status === 404;
   }
 
-  /** Duplicate email, locked currency, onboarding replay. */
   get isConflict() {
     return this.status === 409;
   }
@@ -56,7 +47,6 @@ const NETWORK_MESSAGE =
   'Cannot reach the CredFlow API. Check your connection and try again.';
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
 
-/** Converts anything thrown by the transport layer into an `ApiError`. */
 export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
 

@@ -35,8 +35,7 @@ export function ActivityPanel() {
     [action, page],
   );
 
-  // A member gets a 403 from this route; asking at all would just log a
-  // rejection, so the request is not made.
+  // A member gets a 403 here, so the request is not made at all.
   const auditQuery = useAuditLog(params, canAdminister);
 
   const applyActionFilter = (next: AuditAction | '') => {
@@ -163,13 +162,7 @@ function isDeletion(action: string): boolean {
   return action.endsWith('.deleted') || action.endsWith('.voided') || action.endsWith('.removed');
 }
 
-/**
- * Turns the free-form metadata into one readable clause.
- *
- * The API stores whatever made an entry meaningful — an amount, a granted role —
- * so this reads the keys it knows and stays quiet about the rest rather than
- * dumping JSON at somebody trying to reconstruct an incident.
- */
+/** Reads the metadata keys it knows and stays quiet about the rest. */
 function describeMetadata(entry: AuditEntry, currency: string): string {
   const { metadata } = entry;
   const parts: string[] = [];

@@ -1,73 +1,65 @@
-# CredFlow — web app
+# CredFlow
 
-Debt and collections tracking for African SMEs. This is the Next.js frontend;
-it talks to the CredFlow Go API over REST.
+Web app for CredFlow, a debt and collections tracker for African SMEs. A
+business keeps track of its customers, what each one owes, and the payments
+that come in — with a dashboard for what is outstanding and overdue, analytics
+on collection performance, and a team that can share the work.
+
+Next.js App Router talking to the [CredFlow API](https://github.com/Justdan111/credFlow-Api) over REST.
+
+## Stack
+
+| | |
+|---|---|
+| Framework | Next.js 16, React 19 |
+| Data | TanStack Query, Axios |
+| Forms | Zod schemas mirroring the API's validation |
+| Styling | Tailwind v4, Radix primitives, Framer Motion |
+| Charts | Recharts |
 
 ## Getting started
 
-1. Copy the environment template and point it at your API:
+```bash
+cp .env.example .env.local   # set NEXT_PUBLIC_API_URL if the API is not on :8080
+pnpm install
+pnpm dev
+```
 
-   ```bash
-   cp .env.example .env.local
-   ```
+Open [localhost:3000](http://localhost:3000). The API must be running too.
 
-   | Variable | Purpose |
-   | --- | --- |
-   | `NEXT_PUBLIC_API_URL` | API base URL including the `/api` prefix. Defaults to `http://localhost:8080/api`. |
+For sign-in to work, the API needs to recognise this origin: set
+`ALLOWED_ORIGINS=http://localhost:3000`, `APP_BASE_URL=http://localhost:3000`
+so password-reset links come back here, and `COOKIE_SECURE=false` for local
+http.
 
-2. Start the API, then the frontend:
-
-   ```bash
-   pnpm install
-   pnpm dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000).
-
-### Backend configuration this app depends on
-
-Authentication uses a bearer access token plus an httpOnly refresh cookie, so
-the API has to recognise this origin:
-
-- `ALLOWED_ORIGINS` must include `http://localhost:3000`. CORS refuses a
-  wildcard alongside credentialed requests, and `/auth/refresh` and
-  `/auth/logout` additionally reject a foreign `Origin` header.
-- `APP_BASE_URL` should be `http://localhost:3000` so emailed password-reset
-  links point back here (`/reset-password?token=…`).
-- `COOKIE_SECURE=false` for plain-http local development.
-
-## How the API layer is organised
+## Layout
 
 ```
-src/api/
-  client.ts            Axios instance, bearer injection, refresh-and-retry
-  token-store.ts       In-memory access token + change subscribers
-  errors.ts            ApiError — the single error type the UI handles
-  types.ts             { data, meta, error } envelope and pagination
-  query-keys.ts        Every TanStack Query key, in one registry
-  invalidate.ts        Cross-feature invalidation after money-moving writes
-  <feature>/
-    <feature>.api.ts     HTTP calls, request/response types, domain vocabulary
-    <feature>.queries.ts TanStack Query hooks and cache updates
-    <feature>.schema.ts  Zod form schemas mirroring the API's own validation
+src/
+  api/          one module per backend feature
+    client.ts     Axios instance, bearer injection, refresh-and-retry
+    errors.ts     ApiError — the only error type components see
+    query-keys.ts every cache key, in one registry
+    <feature>/    .api.ts (HTTP) · .queries.ts (hooks) · .schema.ts (forms)
+  app/          routes — (auth) and (dashboard) groups
+  components/   ui primitives, dialogs, charts, domain panels, layout
+  hooks/        small shared hooks
+  lib/          formatting and form helpers
 ```
 
 Pages stay presentational: they call query hooks, render loading, error and
 empty states, and submit through mutations that invalidate whatever the write
 affected.
 
-### Session handling
+## Sessions
 
-The access token is held **in memory only** — never in `localStorage` — so a
-cross-site scripting bug cannot read a credential back out. The refresh token
-lives in an httpOnly, `SameSite=Strict` cookie scoped to `/api/auth`, so on a
-cold load `SessionProvider` calls `POST /auth/refresh` once to rebuild the
-session. A 401 on any other request triggers a single-flight refresh and one
-retry; if that fails, the session is cleared and the user is sent to sign in.
+The access token is held **in memory only**, never in `localStorage`, so a
+cross-site scripting bug cannot read it back out. The refresh token lives in an
+httpOnly cookie, so on a cold load one call to `/auth/refresh` either restores
+the session or proves there is none.
 
-Route guards (`RequireAuth`, `GuestOnly`) are navigation conveniences. The API
-enforces authentication and role checks on every request, and the UI hides
-owner/admin-only actions to match rather than to replace that.
+Route guards and hidden buttons are conveniences. The API checks the token and
+the caller's role on every request, and remains the thing that actually says no.
 
 ## Checks
 
@@ -76,3 +68,6 @@ pnpm exec tsc --noEmit   # types
 pnpm lint                # eslint
 pnpm build               # production build
 ```
+
+[**ARCHITECTURE.md**](ARCHITECTURE.md) explains how the app is put together,
+how it talks to the API, and the decisions behind both.

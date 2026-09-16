@@ -23,13 +23,7 @@ const HREF_PREFIX = {
   payment: '/payments',
 } as const;
 
-/**
- * The header search box.
- *
- * Until `GET /api/search` existed this routed to the customer list with the
- * term pre-applied, which quietly searched one resource and called it global.
- * It now searches customers, debts and payments in one request.
- */
+/** Searches customers, debts and payments in one request. */
 export function GlobalSearch() {
   const router = useRouter();
   const { currency } = useSession();
@@ -51,8 +45,6 @@ export function GlobalSearch() {
 
   useEffect(() => {
     if (!isOpen) return;
-    // Any click outside dismisses the panel, which is what people expect from
-    // an overlay they did not explicitly open.
     const handlePointerDown = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
     };

@@ -11,32 +11,20 @@ import { DEFAULT_PAGE_SIZE, type ApiEnvelope, type ApiMeta, type Paginated } fro
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ?? 'http://localhost:8080/api';
 
-/**
- * Routes that must never trigger the refresh-and-retry dance.
- *
- * A 401 from any of them is the answer, not an expired token: login means bad
- * credentials, refresh means the session itself is gone, and retrying either
- * would loop.
- */
+// A 401 from these is the answer, not an expired token — retrying would loop.
 const NON_REFRESHABLE_PATHS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
 /** `_retried` marks a request that has already been replayed once. */
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
-/**
- * `withCredentials` carries the httpOnly refresh cookie. The backend scopes it
- * to `/api/auth`, so it is only ever sent where it is needed.
- */
+/** `withCredentials` carries the httpOnly refresh cookie. */
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
-/**
- * A bare client for the refresh call itself. Using `apiClient` here would run
- * the response interceptor recursively the moment a refresh returns 401.
- */
+/** Refresh uses a bare client: `apiClient` would recurse through its own 401 handler. */
 const refreshClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
@@ -61,8 +49,7 @@ function refreshAccessToken(): Promise<string | null> {
       return token;
     })
     .catch(() => {
-      // The refresh token is dead: drop the access token so subscribers (the
-      // session provider) can send the user back to the sign-in screen.
+      // The session is gone; subscribers redirect to sign-in.
       clearAccessToken();
       return null;
     })
@@ -98,20 +85,15 @@ apiClient.interceptors.response.use(
   },
 );
 
-/** Restores the session on boot from the refresh cookie alone. */
 export function restoreSession(): Promise<string | null> {
   return refreshAccessToken();
 }
 
-/** Pulls the payload out of the `{ data, meta, error }` envelope. */
 export function unwrap<T>(response: AxiosResponse<ApiEnvelope<T>>): T {
   return response.data.data;
 }
 
-/**
- * Pulls a list plus its pagination metadata. `meta` is synthesised when the
- * server omits it so callers never have to null-check page or total.
- */
+/** `meta` is synthesised when the server omits it, so callers never null-check it. */
 export function unwrapPage<T>(
   response: AxiosResponse<ApiEnvelope<T[]>>,
   requested: { page?: number; pageSize?: number } = {},
@@ -125,10 +107,7 @@ export function unwrapPage<T>(
   return { items, meta };
 }
 
-/**
- * Drops empty values so a blank filter input does not become `?search=` — the
- * backend treats an empty string as a real filter on some routes.
- */
+/** Drops empty values: some routes treat `?search=` as a real (empty) filter. */
 export function cleanParams<T extends object>(params?: T): Partial<T> | undefined {
   if (!params) return undefined;
   const entries = Object.entries(params).filter(

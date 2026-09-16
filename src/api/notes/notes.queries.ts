@@ -23,8 +23,7 @@ export function useCreateNote(customerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateNoteInput) => createCustomerNote(customerId, input),
-    // Notes do not affect any balance, so only this customer's timeline is
-    // stale — no reason to invalidate the financial cluster.
+    // Notes touch no balance, so the financial cluster stays valid.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.notes.all }),
   });
 }

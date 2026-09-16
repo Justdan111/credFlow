@@ -1,11 +1,5 @@
-/**
- * In-memory holder for the short-lived access token.
- *
- * The token deliberately never touches `localStorage` or a readable cookie:
- * anything JavaScript can read, injected JavaScript can exfiltrate. Losing it
- * on reload is not a problem because the refresh token lives in an httpOnly,
- * SameSite=Strict cookie, so `POST /auth/refresh` rebuilds the session on boot.
- */
+// The access token is held in memory only — never localStorage — so injected
+// JavaScript cannot read it. The httpOnly refresh cookie restores it on reload.
 
 let accessToken: string | null = null;
 
@@ -27,10 +21,6 @@ export function clearAccessToken(): void {
   setAccessToken(null);
 }
 
-/**
- * Notifies when the token appears or disappears, so the session provider can
- * react to a refresh that failed deep inside an unrelated request.
- */
 export function subscribeToAccessToken(listener: Listener): () => void {
   listeners.add(listener);
   return () => {

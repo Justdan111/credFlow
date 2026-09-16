@@ -28,7 +28,6 @@ export function useInviteMember() {
     mutationFn: (input: InviteMemberInput) => inviteMember(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
-      // Inviting is itself an audited action.
       void queryClient.invalidateQueries({ queryKey: queryKeys.audit.all });
     },
   });
@@ -47,10 +46,7 @@ export function useUpdateMember(userId: string) {
   });
 }
 
-/**
- * Owner only. The API refuses to remove the last owner (409) or the caller
- * themselves (403).
- */
+/** Owner only. Refused for the last owner (409) or the caller themselves (403). */
 export function useRemoveMember() {
   const queryClient = useQueryClient();
   return useMutation({

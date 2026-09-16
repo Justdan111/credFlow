@@ -12,13 +12,7 @@ import { Select } from '@/components/ui/select';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formatCurrency, formatDate } from '@/lib/format';
 
-/**
- * Pickers that resolve to real UUIDs.
- *
- * Every write that references a customer or a debt has to send its id. A free
- * text field cannot do that — it produces a name the API has no way to match —
- * so relationships are always chosen from live server data.
- */
+/** Pickers that resolve to real UUIDs; the API matches on id, never on name. */
 
 interface CustomerSelectProps {
   value: string;
@@ -94,11 +88,8 @@ interface DebtSelectProps {
   id?: string;
 }
 
-/**
- * Open debts for one customer. Attribution is optional — a payment can be
- * recorded against the customer's balance without naming a debt — so the empty
- * option is a real choice, not a placeholder.
- */
+/** Open debts for one customer. The empty option is a real choice: a payment
+ *  can credit the customer's balance without naming a debt. */
 export function DebtSelect({ customerId, value, onChange, error, id = 'debtId' }: DebtSelectProps) {
   const { currency } = useSession();
   const debtsQuery = useCustomerDebts(

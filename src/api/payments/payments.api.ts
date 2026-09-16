@@ -56,10 +56,7 @@ export interface CreatePaymentInput {
   notes?: string;
   /** RFC 3339; defaults to now when omitted. */
   paidAt?: string;
-  /**
-   * Guards against a double submit creating two payments. The server replays
-   * the original record instead of inserting a second one.
-   */
+  /** A double submit replays the original payment instead of recording a second. */
   idempotencyKey?: string;
 }
 
@@ -81,7 +78,6 @@ export async function listPayments(params?: PaymentListParams): Promise<Paginate
   return unwrapPage(response, params);
 }
 
-/** `GET /customers/:customerId/payments`. */
 export async function listCustomerPayments(
   customerId: string,
   params?: Omit<PaymentListParams, 'customerId'>,
@@ -93,13 +89,7 @@ export async function listCustomerPayments(
   return unwrapPage(response, params);
 }
 
-/**
- * `GET /debts/:debtId/payments`.
- *
- * The nested route confirms the debt belongs to this tenant, so an unknown id
- * answers 404 rather than an empty list — which would read as "this debt has no
- * payments" and hide the mistake.
- */
+/** An unknown debt id answers 404 rather than an empty list. */
 export async function listDebtPayments(
   debtId: string,
   params?: Omit<PaymentListParams, 'debtId'>,
@@ -130,14 +120,9 @@ export async function createDebtPayment(
 }
 
 /**
- * Corrects a recorded payment. Requires the owner or admin role.
- *
- * The linked debt's status is recomputed in the same transaction, so raising an
- * amount can settle a debt and lowering it can reopen one.
- *
- * `customerId` and `debtId` are deliberately absent: re-pointing a payment at a
- * different debt would move two balances under one opaque edit. Void it and
- * record it again, which leaves both actions in the audit trail.
+ * Owner/admin. The linked debt is recomputed, so raising an amount can settle a
+ * debt and lowering it can reopen one. The customer and debt cannot be changed:
+ * void the payment and record it again instead.
  */
 export async function updatePayment(
   paymentId: string,
@@ -151,10 +136,7 @@ export async function deletePayment(paymentId: string): Promise<void> {
   await apiClient.delete(`/payments/${paymentId}`);
 }
 
-/**
- * A key unique to one submission attempt, so a retry or double click cannot
- * record the same money twice.
- */
+/** Unique per submission, so a retry cannot record the same money twice. */
 export function newIdempotencyKey(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();

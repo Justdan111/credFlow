@@ -94,7 +94,6 @@ function CustomersView() {
       await deleteCustomer.mutateAsync(pendingDeleteId);
       setPendingDeleteId(null);
     } catch {
-      // Shown inside the dialog from the mutation's error state.
     }
   };
 

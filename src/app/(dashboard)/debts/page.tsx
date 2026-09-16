@@ -61,8 +61,7 @@ export default function DebtsPage() {
     () => ({
       page,
       pageSize: DEFAULT_PAGE_SIZE,
-      // `overdue` is a separate flag server-side, not a status value: an
-      // overdue debt is still "pending" in the ledger.
+      // `overdue` is a flag, not a status: an overdue debt is still "pending".
       status: statusFilter === 'all' || statusFilter === 'overdue' ? undefined : statusFilter,
       overdue: statusFilter === 'overdue' ? ('true' as const) : undefined,
       customerId: customerFilter || undefined,
@@ -81,8 +80,7 @@ export default function DebtsPage() {
   const debts = debtsQuery.data?.items ?? [];
   const summary = summaryQuery.data;
 
-  // Customer names are not on the debt payload, so they are resolved once per
-  // render instead of one request per row.
+  // Debts carry no customer name, so it is resolved once rather than per row.
   const customerNames = useMemo(() => {
     const lookup = new Map<string, string>();
     for (const customer of customersQuery.data?.items ?? []) lookup.set(customer.id, customer.name);

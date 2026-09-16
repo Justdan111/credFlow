@@ -5,21 +5,14 @@ import { useState } from 'react';
 
 import { ApiError } from '@/api/errors';
 
-/**
- * Retries transport failures, never rejections.
- *
- * A 4xx is a decision the server already made — invalid input, a missing
- * record, a role the user does not have — and repeating the request cannot
- * change it. Retrying would only delay the error the user needs to see.
- */
+/** A 4xx is a decision the server already made; retrying only delays the error. */
 function shouldRetry(failureCount: number, error: unknown): boolean {
   if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
   return failureCount < 2;
 }
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  // Created lazily and once per browser session: a client shared across users
-  // would leak one tenant's cached rows into another's session.
+  // One client per browser session, so no tenant's rows leak into another's.
   const [queryClient] = useState(
     () =>
       new QueryClient({

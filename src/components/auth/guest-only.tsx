@@ -7,14 +7,9 @@ import { useSession } from '@/components/providers/session-provider';
 import { FullPageLoader } from '@/components/feedback/states';
 
 /**
- * Keeps a signed-in user off the sign-in and registration screens, sending
- * them wherever they actually belong: onboarding if it is unfinished, the
- * dashboard otherwise.
- *
- * The form renders immediately while the session is still being restored.
- * Almost everyone who opens these pages is signed out, and making them wait on
- * a round-trip to the API before they can start typing would be the wrong
- * trade for the rare case of an already-authenticated visitor.
+ * Redirects a signed-in user away from sign-in and registration. The form
+ * renders while the session is still restoring — almost everyone here is signed
+ * out, and making them wait on a round-trip to type would be the wrong trade.
  */
 export function GuestOnly({ children }: { children: React.ReactNode }) {
   const router = useRouter();

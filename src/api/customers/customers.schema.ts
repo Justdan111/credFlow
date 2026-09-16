@@ -7,11 +7,7 @@ const optionalEmail = z.union([
   z.string().trim().email('Enter a valid email address'),
 ]);
 
-/**
- * Mirrors `validateCreate`/`validateUpdate` in the backend customers service:
- * name is the only required field, email must parse when present, and the
- * credit limit cannot be negative.
- */
+/** Mirrors the backend's own customer validation. */
 export const customerSchema = z.object({
   name: z.string().trim().min(1, 'Customer name is required'),
   email: optionalEmail,
