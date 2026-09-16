@@ -1,5 +1,8 @@
 # CredFlow
 
+| Overview | [Architecture](ARCHITECTURE.md) |
+|:---:|:---:|
+
 Web app for CredFlow, a debt and collections tracker for African SMEs. A
 business keeps track of its customers, what each one owes, and the payments
 that come in — with a dashboard for what is outstanding and overdue, analytics
@@ -71,3 +74,8 @@ pnpm build               # production build
 
 [**ARCHITECTURE.md**](ARCHITECTURE.md) explains how the app is put together,
 how it talks to the API, and the decisions behind both.
+
+---
+
+| Overview | [Architecture](ARCHITECTURE.md) |
+|:---:|:---:|

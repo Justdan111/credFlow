@@ -1,5 +1,8 @@
 # Architecture
 
+| [Overview](README.md) | Architecture |
+|:---:|:---:|
+
 How the CredFlow web app is built, how it talks to the API, and why it is
 arranged this way. [README.md](README.md) covers getting it running.
 
@@ -231,3 +234,8 @@ rather than inventing a percentage.
   that many records is visibly partial rather than quietly wrong.
 - `phone` is write-only: `GET /auth/me` does not return it, so the settings form
   omits the field when blank rather than clearing a number the user never saw.
+
+---
+
+| [Overview](README.md) | Architecture |
+|:---:|:---:|
