@@ -28,7 +28,7 @@ src/
   api/            one module per backend feature
     client.ts       Axios instance, bearer injection, refresh-and-retry
     token-store.ts  in-memory access token + change subscribers
-    errors.ts       ApiError — the only error type components see
+    errors.ts       ApiError — the only error type components see 
     types.ts        the { data, meta, error } envelope, pagination
     query-keys.ts   every cache key, in one registry
     invalidate.ts   what a money-moving write makes stale
