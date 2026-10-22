@@ -123,7 +123,7 @@ export function RecordPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+     <DialogContent className="max-h-[85vh] overflow-y-auto">
         <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
           <Wallet className="w-4 h-4" strokeWidth={2} />
         </div>
